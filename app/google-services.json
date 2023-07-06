@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "176751805279",
+    "project_id": "recall-c5f17",
+    "storage_bucket": "recall-c5f17.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:176751805279:android:75082a08f50b4b28a62cea",
+        "android_client_info": {
+          "package_name": "com.novacodestudios.recall"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "176751805279-6a3n4mk52douq671qakjnrt1jbu9ha2l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1BCCg3r3QzapBgstXLK-N3VCtfeuK5jM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "176751805279-6a3n4mk52douq671qakjnrt1jbu9ha2l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
