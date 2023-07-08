@@ -34,11 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.novacodestudios.recall.roomdb.table.Word
 import com.novacodestudios.recall.util.StandardDialog
 import com.novacodestudios.recall.util.StandardSearchBar
 import com.novacodestudios.recall.util.StandardTextField
 import com.novacodestudios.recall.ui.theme.ReCallTheme
-import com.novacodestudios.recall.viewmodel.QuizHistoryViewModel
 import com.novacodestudios.recall.viewmodel.WordViewModel
 
 
@@ -57,7 +57,7 @@ fun PreviewLightScreen() {
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun WordScreen(navController: NavController,viewModel: WordViewModel = hiltViewModel()) {
+fun WordScreen(navController: NavController, viewModel: WordViewModel = hiltViewModel()) {
     var visible by remember { mutableStateOf(false) }
     Scaffold(
         floatingActionButton = {
@@ -91,7 +91,7 @@ fun WordScreen(navController: NavController,viewModel: WordViewModel = hiltViewM
                     title = "Kelime ekleyin",
                     onDismiss = { visible = false },
                     onRequest = {}
-                ){
+                ) {
                     val dialogModifier = Modifier.padding(horizontal = 8.dp)
                     StandardTextField(hint = "Kelime", modifier = dialogModifier)
                     StandardTextField(hint = "Anlamı", modifier = dialogModifier)
@@ -104,8 +104,6 @@ fun WordScreen(navController: NavController,viewModel: WordViewModel = hiltViewM
 
 
 }
-
-
 
 
 @Composable
@@ -134,42 +132,17 @@ fun WordRow(word: Word, fontSize: TextUnit = TextUnit.Unspecified) {
             .padding(horizontal = 8.dp)
     ) {
         Text(
-            text = word.name,
+            text = word.originalName,
             fontSize = fontSize,
             modifier = Modifier.weight(0.4f),
             fontWeight = FontWeight.Bold
         )
-        Column(Modifier.weight(0.6f)) {
-            word.wordTranslation.forEachIndexed { i, it ->
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-
-                ) {
-                    Text(
-                        text = it.translation,
-                        fontSize = fontSize
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Outlined.Lightbulb,
-                            contentDescription = "Ezber oranı",
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                        Text(
-                            text = "%${it.memorizationRate}",
-                            fontSize = fontSize
-                        )
-                    }
-                }
-                if (word.wordTranslation.size - 1 != i)
-                    Divider()
-            }
-
-        }
+        Text(
+            text = word.translations,
+            fontSize = fontSize,
+            modifier = Modifier.weight(0.4f),
+            fontWeight = FontWeight.Bold
+        )
 
 
     }
@@ -178,16 +151,6 @@ fun WordRow(word: Word, fontSize: TextUnit = TextUnit.Unspecified) {
 }
 
 
-data class Word(val name: String, val wordTranslation: List<WordTranslation>)
-data class WordTranslation(val translation: String, val memorizationRate: Double)
-
-val wordList = listOf(
-    Word("apple", listOf(WordTranslation("elma", 20.0))),
-    Word("orange", listOf(WordTranslation("portakal", 10.0), WordTranslation("turuncu", 15.0))),
-    Word("banana", listOf(WordTranslation("muz", 90.0))),
-    Word("table", listOf(WordTranslation("masa", 60.0))),
-    Word("chair", listOf(WordTranslation("sandalye", 10.0))),
-)
 
 
 

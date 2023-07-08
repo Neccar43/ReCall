@@ -92,6 +92,7 @@ fun StandardPasswordField(
     supportingText: String? = null,
     isError: Boolean = false,
     cornerRadius: Int = 40,
+    getPassword: (String) -> Unit={}
 
     ) {
     var text by remember {
@@ -100,6 +101,7 @@ fun StandardPasswordField(
     var isPasswordVisible by remember {
         mutableStateOf(false)
     }
+    getPassword(text)
     OutlinedTextField(
         value = text,
         onValueChange = { text = it },

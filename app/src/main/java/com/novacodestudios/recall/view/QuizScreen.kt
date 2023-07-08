@@ -28,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.novacodestudios.recall.Screen
+import com.novacodestudios.recall.roomdb.table.Word
 import com.novacodestudios.recall.util.StandardButton
 import com.novacodestudios.recall.util.StandardText
 import com.novacodestudios.recall.util.StandardTextField
@@ -48,6 +49,7 @@ fun PreviewQuizScreen() {
         }
     }
 }
+val wordList= emptyList<Word>()
 
 @Composable
 fun QuizScreen(navController: NavController,viewModel: QuizViewModel = hiltViewModel()) {
@@ -81,8 +83,8 @@ fun QuizScreen(navController: NavController,viewModel: QuizViewModel = hiltViewM
         }
 
         QuestionCard(
-            question = wordList[index].name,
-            answer = wordList[index].wordTranslation[0].translation,
+            question = wordList[index].originalName,
+            answer = wordList[index].translations,
             skipNextQuestion = { isCorrect ->
                 if (isCorrect)
                     index++

@@ -88,9 +88,7 @@ fun SignInScreen(navController: NavController,viewModel: SignInViewModel = hiltV
                     .padding(end = 8.dp, bottom = 8.dp),
                 text = "Hesabınız yok mu? Kaydolun.",
                 onClick = {
-                    navController.navigate(Screen.SignUpScreen.route) {
-                    //popup işlemı yapılacak
-                    }
+                    navController.navigate(Screen.SignUpScreen.route)
                 })
         }
     }

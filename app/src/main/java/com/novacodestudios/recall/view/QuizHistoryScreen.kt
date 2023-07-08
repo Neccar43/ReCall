@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.novacodestudios.recall.Screen
+import com.novacodestudios.recall.roomdb.table.Quiz
 import com.novacodestudios.recall.util.StandardText
 import com.novacodestudios.recall.ui.theme.ReCallTheme
 import com.novacodestudios.recall.viewmodel.QuizHistoryViewModel
@@ -71,7 +72,7 @@ fun QuizHistoryScreen(
         }
     ) {
         LazyColumn(modifier = Modifier) {
-            items(quizList) {
+            items(listOf<Quiz>()) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -95,36 +96,13 @@ fun QuizRow(quiz: Quiz, onClick: () -> Unit = {}) {
             .clickable { onClick() }
     ) {
         StandardText(text = quiz.date)
-        StandardText(text = quiz.trueCount.toString())
-        StandardText(text = quiz.falseCount.toString())
-        StandardText(text = "%" + (quiz.successRate * 100).toString())
+        StandardText(text = "Doğru sayısı")
+        StandardText(text = "Yanlış sayısı")
     }
 
 
 }
 
 
-val quizList = listOf(
-    Quiz(10, 5, 0.66, "2023-06-01"),
-    Quiz(8, 2, 0.8, "2023-06-02"),
-    Quiz(15, 3, 0.83, "2023-06-03"),
-    Quiz(12, 4, 0.75, "2023-06-04"),
-    Quiz(9, 1, 0.9, "2023-06-05"),
-    Quiz(11, 3, 0.79, "2023-06-06"),
-    Quiz(13, 2, 0.87, "2023-06-07"),
-    Quiz(7, 4, 0.64, "2023-06-08"),
-    Quiz(16, 1, 0.94, "2023-06-09"),
-    Quiz(10, 2, 0.83, "2023-06-10"),
-    Quiz(14, 3, 0.82, "2023-06-11"),
-    Quiz(11, 5, 0.69, "2023-06-12"),
-    Quiz(9, 3, 0.75, "2023-06-13"),
-    Quiz(12, 2, 0.86, "2023-06-14"),
-    Quiz(8, 1, 0.89, "2023-06-15"),
-    Quiz(13, 4, 0.76, "2023-06-16"),
-    Quiz(10, 3, 0.77, "2023-06-17"),
-    Quiz(7, 2, 0.78, "2023-06-18"),
-    Quiz(15, 1, 0.93, "2023-06-19"),
-    Quiz(11, 4, 0.73, "2023-06-20")
-)
 
-data class Quiz(val trueCount: Int, val falseCount: Int, val successRate: Double, val date: String)
+
