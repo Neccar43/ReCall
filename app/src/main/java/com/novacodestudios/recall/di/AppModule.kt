@@ -7,9 +7,11 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.novacodestudios.recall.repository.ReCallRepository
-import com.novacodestudios.recall.roomdb.ReCallDao
-import com.novacodestudios.recall.roomdb.ReCallDatabase
+import com.novacodestudios.recall.data.local.ReCallDao
+import com.novacodestudios.recall.data.local.ReCallDatabase
+import com.novacodestudios.recall.data.repository.ReCallRepositoryImpl
+import com.novacodestudios.recall.domain.algorithm.SpacedRepetitionAlgorithm
+import com.novacodestudios.recall.domain.repository.ReCallRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,13 +35,22 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun injectRepository(dao: ReCallDao):ReCallRepository=ReCallRepository(dao)
+    fun injectRepository(
+        dao: ReCallDao,
+        auth: FirebaseAuth,
+        firestore: FirebaseFirestore,
+        algorithm:SpacedRepetitionAlgorithm
+    ): ReCallRepository = ReCallRepositoryImpl(dao, auth, firestore,algorithm)
 
     @Singleton
     @Provides
-   fun injectFirebaseAuth():FirebaseAuth=Firebase.auth
+    fun injectFirebaseAuth(): FirebaseAuth = Firebase.auth
 
     @Singleton
     @Provides
-    fun injectFirestore():FirebaseFirestore=Firebase.firestore
+    fun injectFirestore(): FirebaseFirestore = Firebase.firestore
+
+    @Singleton
+    @Provides
+    fun injectAlgorithm():SpacedRepetitionAlgorithm=SpacedRepetitionAlgorithm
 }
