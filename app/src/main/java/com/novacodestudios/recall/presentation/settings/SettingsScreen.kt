@@ -1,6 +1,5 @@
 package com.novacodestudios.recall.presentation.settings
 
-import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,27 +17,38 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.novacodestudios.recall.presentation.Graph
-import com.novacodestudios.recall.util.StandardDialog
-import com.novacodestudios.recall.util.StandardText
-import com.novacodestudios.recall.ui.theme.ReCallTheme
+import com.novacodestudios.recall.R
+import com.novacodestudios.recall.presentation.util.StandardDialog
+import com.novacodestudios.recall.presentation.util.StandardText
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun SettingsScreen(navController: NavController,viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(
+    viewModel: SettingsViewModel = hiltViewModel(),
+    onNavigateToAuthGraph:()->Unit,
+    ) {
+    val state = viewModel.state
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest {
+            when (it) {
+               is SettingsViewModel.UIEvent.SignIn -> {
+                  onNavigateToAuthGraph()
+               }
+            }
+        }
+    }
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -55,10 +65,10 @@ fun SettingsScreen(navController: NavController,viewModel: SettingsViewModel = h
                 .padding(horizontal = 8.dp, vertical = 15.dp)
 
             StandardText(
-                text = "Hesabım",
-                modifier = textModifier,
+                text = stringResource(id = R.string.my_account),
+                modifier = textModifier.clickable {  },
                 imageVector = Icons.Outlined.Person,
-                description = "Hesabım"
+                description = stringResource(id = R.string.my_account)
             )
 
             Divider(modifier = dividerModifier)
@@ -71,29 +81,28 @@ fun SettingsScreen(navController: NavController,viewModel: SettingsViewModel = h
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 StandardText(
-                    text = "Koyu tema",
+                    text = stringResource(id = R.string.dark_theme),
                     imageVector = Icons.Outlined.DarkMode,
-                    description = "Koyu mod"
+                    description = stringResource(id = R.string.dark_theme)
                 )
 
-                var checked by remember {
-                    mutableStateOf(false)
-                }
                 Switch(
-                    checked = checked, onCheckedChange = { checked = it },
+                    checked = state.isDarkTheme,
+                    onCheckedChange = {
+                        viewModel.onEvent(SettingsEvent.ThemeChanged(!state.isDarkTheme))
+                    },
                     modifier = Modifier
                         .height(14.dp)
                         .padding(end = 20.dp)
                 )
             }
 
-
             Divider(modifier = dividerModifier)
 
             StandardText(
-                text = "Hesabı sil", modifier = textModifier,
+                text = stringResource(id = R.string.delete_account), modifier = textModifier,
                 imageVector = Icons.Outlined.Delete,
-                description = "Hesabı sil"
+                description = stringResource(id = R.string.delete_account)
             )
 
             Divider(modifier = dividerModifier)
@@ -101,26 +110,23 @@ fun SettingsScreen(navController: NavController,viewModel: SettingsViewModel = h
                 mutableStateOf(false)
             }
             StandardText(
-                text = "Çıkış yap",
+                text = stringResource(id = R.string.sign_out),
                 modifier = textModifier.clickable { visible = true },
                 imageVector = Icons.Outlined.Logout,
-                description = "Çıkış yap",
+                description = stringResource(id = R.string.sign_out),
             )
 
             Divider(modifier = dividerModifier)
 
             if (visible)
-                StandardDialog(title = "Çıkış?", onDismiss = { visible = false }, onRequest = {
-                    navController.navigate(Graph.AUTHENTICATION) {
-                        popUpTo(Graph.HOME) {
-                            inclusive = true
-                        }
-                    }
-                    visible = false
-                }) {
+                StandardDialog(title = stringResource(id = R.string.are_you_sure),
+                    onDismiss = { visible = false }, onRequest = {
+                        viewModel.onEvent(SettingsEvent.SignOut)
+                        visible = false
+                    }) {
                     Spacer(modifier = Modifier.height(10.dp))
                     StandardText(
-                        text = "Uygulamadan çıkış yapmak üzeresiniz.",
+                        text = stringResource(id = R.string.exit_app),
                         modifier = Modifier,
                         fontSize = MaterialTheme.typography.bodyLarge.fontSize
                     )
@@ -132,17 +138,3 @@ fun SettingsScreen(navController: NavController,viewModel: SettingsViewModel = h
     }
 }
 
-
-@Preview(showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Composable
-fun PreviewSettingsScreen() {
-    ReCallTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            SettingsScreen(navController = rememberNavController())
-        }
-    }
-}
