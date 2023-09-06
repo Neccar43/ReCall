@@ -41,8 +41,8 @@ object SpacedRepetitionAlgorithm {
         }
     }
 
-    private fun calculateEasinessFactor(easiness: Float, quality: Int) =
-        Math.max(1.3, easiness + 0.1 - (5.0 - quality) * (0.08 + (5.0 - quality) * 0.02)).toFloat()
+    private fun calculateEasinessFactor(easiness: Double, quality: Int) =
+        Math.max(1.3, easiness + 0.1 - (5.0 - quality) * (0.08 + (5.0 - quality) * 0.02))
 
     private fun calculateRepetitions(quality: Int, wordRepetitions: Int) = if (quality < 3) {
         0
@@ -50,7 +50,7 @@ object SpacedRepetitionAlgorithm {
         wordRepetitions + 1
     }
 
-    private fun calculateInterval(repetitions: Int, wordInterval: Int, easiness: Float) = when {
+    private fun calculateInterval(repetitions: Int, wordInterval: Int, easiness: Double) = when {
         repetitions <= 1 -> 1
         repetitions == 2 -> 6
         else -> (wordInterval * easiness).roundToInt()
