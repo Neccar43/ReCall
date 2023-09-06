@@ -1,104 +1,96 @@
 package com.novacodestudios.recall.presentation.quiz_history
 
-import android.annotation.SuppressLint
-import android.content.res.Configuration
+import android.content.Context
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PostAdd
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ListItem
 import androidx.compose.material3.Card
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.novacodestudios.recall.presentation.util.Screen
-import com.novacodestudios.recall.util.StandardText
-import com.novacodestudios.recall.ui.theme.ReCallTheme
-
-@Preview(showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Composable
-fun PreviewDarkScreen() {
-    ReCallTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            QuizHistoryScreen(navController = rememberNavController())
-        }
-    }
-}
+import com.novacodestudios.recall.domain.model.Quiz
+import com.novacodestudios.recall.util.relativeTimeAgo
 
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun QuizHistoryScreen(
-    navController: NavController,
-    viewModel: QuizHistoryViewModel = hiltViewModel()
+    viewModel: QuizHistoryViewModel = hiltViewModel(),
+    context: Context,
+    onNavigateToQuestionScreen:(activeQuizId:String)->Unit,
+    onNavigateToResultScreen:(quizId:String)->Unit,
 ) {
+    val state = viewModel.state
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate(Screen.QuizScreen.route) {
-                        //popUp yap
-                    }
-                },
-                modifier = Modifier
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PostAdd,
-                    contentDescription = "Create"
-                )
+    LazyColumn(contentPadding = PaddingValues(8.dp)) {
+        state.activeQuiz?.let { activeQuiz ->
+            item {
+                NewQuizRow(activeQuiz,
+                    onClick = { onNavigateToQuestionScreen(activeQuiz.id.toString()) })
             }
         }
-    ) {
-        LazyColumn(modifier = Modifier) {
-            items(listOf<Quiz>()) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    QuizRow(quiz = it)
-                }
-            }
+        item {
+            Divider()
+        }
+        items(state.pastQuizzes) {quiz->
+            QuizItem(
+                quiz = quiz,
+                context = context,
+                onClick = { onNavigateToResultScreen(quiz.id.toString()) })
         }
     }
-
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun QuizRow(quiz: Quiz, onClick: () -> Unit = {}) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically,
+fun QuizItem(quiz: Quiz, context: Context, onClick: () -> Unit) {
+    ListItem(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-    ) {
-        StandardText(text = quiz.date)
-        StandardText(text = "Doğru sayısı")
-        StandardText(text = "Yanlış sayısı")
+            .clickable { onClick() },
+        text = { Text(text = "Başarı oranı:") },
+        secondaryText = { Text(text = relativeTimeAgo(quiz.date, context)) }
+    )
+    Divider()
+}
+
+
+@Composable
+fun NewQuizRow(quiz: Quiz, onClick: () -> Unit) {
+    Card(modifier = Modifier.padding(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .clickable { onClick() }) {
+            Column {
+                Text(
+                    text = "Hazırda testiniz var.",
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                )
+                Text(
+                    text = "Başlamak için tıklayın",
+                    fontSize = MaterialTheme.typography.bodyLarge.fontSize
+                )
+            }
+
+        }
     }
 
-
 }
+
+
 
 
 
