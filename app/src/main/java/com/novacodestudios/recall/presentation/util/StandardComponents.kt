@@ -1,4 +1,4 @@
-package com.novacodestudios.recall.util
+package com.novacodestudios.recall.presentation.util
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.novacodestudios.recall.R
 
 @Composable
 fun StandardTextField(
@@ -49,22 +51,13 @@ fun StandardTextField(
     isError: Boolean = false,
     cornerRadius: Int = 40,
     keyboardType: KeyboardType = KeyboardType.Text,
-    getText: (String) -> Unit = {}
+    text: String,
+    onValueChange:(String)->Unit
 
 ) {
-    var text by remember {
-        mutableStateOf("")
-    }
-    getText(text)
     OutlinedTextField(
         value = text,
-        onValueChange = { str ->
-            text = if (keyboardType == KeyboardType.Text)
-                str.filter { it.isLetter() }
-            else
-                str
-
-        },
+        onValueChange = {onValueChange(it)},
         modifier = modifier,
         label = { Text(text = hint) },
         leadingIcon = iconStart,
@@ -92,19 +85,17 @@ fun StandardPasswordField(
     supportingText: String? = null,
     isError: Boolean = false,
     cornerRadius: Int = 40,
-    getPassword: (String) -> Unit={}
+    onValueChange: (String) -> Unit,
+    text: String
 
     ) {
-    var text by remember {
-        mutableStateOf("")
-    }
+
     var isPasswordVisible by remember {
         mutableStateOf(false)
     }
-    getPassword(text)
     OutlinedTextField(
         value = text,
-        onValueChange = { text = it },
+        onValueChange = {onValueChange(it)},
         modifier = modifier,
         label = { Text(text = hint) },
         leadingIcon = iconStart,
@@ -196,22 +187,14 @@ fun StandardSearchBar(
     isError: Boolean = false,
     cornerRadius: Int = 40,
     keyboardType: KeyboardType = KeyboardType.Text,
-    onSearch: (String) -> Unit = {}
+    onSearch: (String) -> Unit,
+    text:String
 
 ) {
 
-    var text by remember {
-        mutableStateOf("")
-    }
     OutlinedTextField(
         value = text,
-        onValueChange = { str ->
-            text = if (keyboardType == KeyboardType.Text)
-                str.filter { it.isLetter() }
-            else
-                str
-
-        },
+        onValueChange = { onSearch(it)},
         modifier = modifier,
         label = { Text(text = hint) },
         leadingIcon = {
@@ -255,11 +238,11 @@ fun StandardDivider(text: String = "") {
 @Composable
 fun StandardDialog(
     title: String,
-    dismissText: String = "İptal",
-    requestText: String = "Tamam",
+    dismissText: String = stringResource(id = R.string.cancel),
+    requestText: String = stringResource(id = R.string.ok),
     onDismiss: () -> Unit,
     onRequest: () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card {
