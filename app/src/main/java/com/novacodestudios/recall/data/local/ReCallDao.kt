@@ -8,58 +8,95 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.novacodestudios.recall.domain.model.Question
-import com.novacodestudios.recall.domain.model.relation.QuizWithQuestions
-import com.novacodestudios.recall.domain.model.relation.UserWithQuizzes
-import com.novacodestudios.recall.domain.model.relation.UserWithWords
 import com.novacodestudios.recall.domain.model.Quiz
 import com.novacodestudios.recall.domain.model.Word
+import com.novacodestudios.recall.domain.model.relation.QuizWithQuestions
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
 @Dao
 interface ReCallDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWord(word: Word)
+    suspend fun insertWordToRoom(word: Word)
 
-    @Delete
-    suspend fun deleteWord(word: Word)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertQuizToRoom(quiz: Quiz)
 
-    @Query("SELECT * FROM Word")
-    suspend fun getWords(): Flow<List<Word>>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertQuestions(vararg questions: Question)
+
+    @Update
+    suspend fun updateWordsInRoom(vararg words: Word)
 
     @Update
     suspend fun updateWord(word: Word)
 
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertQuizWithQuestions(quizWithQuestions: QuizWithQuestions)
-
-    @Transaction
-    @Query("SELECT * FROM Quiz WHERE :quizId=id")
-    suspend fun getQuizWithQuestions(quizId:Int): QuizWithQuestions
-
-    @Query("SELECT id  FROM Word WHERE :now>=nextRepetitions ORDER BY nextRepetitions ASC")
-    suspend fun getWordsByDate(now: String = LocalDateTime.now().toString()): Flow<List<Word>>
-
-    @Transaction
-    @Query("SELECT * FROM Quiz WHERE date <= :now ORDER BY date ASC")
-    suspend fun getQuizWithQuestionsByDate(now: String = LocalDateTime.now().toString()): Flow<List<QuizWithQuestions>>
-
-    //Bildirim göndermek için kullanılacak 24 saatte bir çalıştırılacak.
-    @Query("SELECT COUNT(*) >= 10 FROM Word WHERE nextRepetitions <= :now")
-    suspend fun isTodayQuizExist(now: String = LocalDateTime.now().toString()): Boolean
-
-
-    @Transaction
-    @Query("SELECT * FROM User WHERE id=:userId")
-    suspend fun getUserWithQuizzes(userId: Int): UserWithQuizzes
-
-    @Transaction
-    @Query("SELECT * FROM User WHERE id=:userId")
-    suspend fun getUserWithWords(userId: Int): UserWithWords
-
+    @Update
+    suspend fun updateQuestionInRoom(question: Question)
 
     @Update
-    suspend fun updateQuestion(question: Question)
+    suspend fun updateQuizzes(vararg quizzes: Quiz)
+
+    @Update
+    suspend fun updateQuiz(quiz: Quiz)
+
+    @Delete
+    suspend fun deleteWordFromRoom(word: Word)
+
+    @Query("DELETE FROM Word")
+    suspend fun deleteAllWords()
+
+    @Query("DELETE FROM Question")
+    suspend fun deleteAllQuestion()
+
+    @Query("DELETE FROM Quiz")
+    suspend fun deleteAllQuizzes()
+
+    @Query("SELECT * FROM Word")
+    fun getAllWordsFromRoom(): Flow<List<Word>>
+
+    @Query("SELECT * FROM Quiz")
+    fun getAllQuizzesFromRoom(): Flow<List<Quiz>>
+
+    @Query(
+        """
+         SELECT * FROM Word 
+         WHERE LOWER(name) LIKE '%' || LOWER(:search) || '%' OR 
+         LOWER(meaning) LIKE '%' || LOWER(:search) || '%' 
+         """
+    )
+    fun searchWords(search: String): Flow<List<Word>>
+
+    @Query("SELECT * FROM Question WHERE quizId=:quizId")
+    fun getQuestionsByQuizId(quizId: Int): Flow<List<Question>>
+
+    @Query("SELECT * FROM Quiz WHERE isCompleted=1 ORDER BY date DESC")
+    fun getCompletedQuizzesFromRoom(): Flow<List<Quiz>>
+
+    @Query("SELECT * FROM Quiz WHERE isCompleted=0 ORDER BY date")
+    fun getActiveQuizzesFromRoom(): Flow<List<Quiz>>
+
+    @Query("SELECT *  FROM Word WHERE :now>=nextRepetitions AND isInQuiz=0 ORDER BY nextRepetitions ASC")
+    fun getQuestionCandidateWords(now: String = LocalDateTime.now().toString()): Flow<List<Word>>
+
+    @Transaction
+    @Query("SELECT * FROM Quiz WHERE date <= :now AND isCompleted=0 ORDER BY date ASC")
+    fun getUpcomingQuizzesWithQuestions(
+        now: String = LocalDateTime.now().toString()
+    ): Flow<List<QuizWithQuestions>>
+
+    @Query("SELECT * FROM Word WHERE id=:id")
+    suspend fun getWordById(id: Int): Word
+
+    @Transaction
+    @Query("SELECT * FROM Quiz WHERE id=:quizId")
+    fun getQuizWithQuestionsByQuizId(quizId: Int): Flow<QuizWithQuestions>
+
+    @Query("SELECT COUNT(*) >= 10 FROM Word WHERE nextRepetitions <= :now AND isInQuiz=0")
+    suspend fun shouldCreateQuiz(now: String = LocalDateTime.now().toString()): Boolean
+
+    @Query("UPDATE Quiz SET isCompleted=1 WHERE id=:quizId")
+    suspend fun updateQuizIsCompleted(quizId: Int)
+
 
 }
