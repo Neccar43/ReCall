@@ -2,8 +2,10 @@ package com.novacodestudios.recall.domain.repository
 
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.domain.model.Quiz
+import com.novacodestudios.recall.domain.model.Translation
 import com.novacodestudios.recall.domain.model.Word
 import com.novacodestudios.recall.domain.model.relation.QuizWithQuestions
+import com.novacodestudios.recall.util.Resource
 import kotlinx.coroutines.flow.Flow
 
 interface ReCallRepository {
@@ -18,8 +20,6 @@ interface ReCallRepository {
     fun getQuestionsByQuizId(quizId: Int): Flow<List<Question>>
 
     suspend fun updateQuestionToRoom(question: Question)
-
-    /* suspend fun saveQuizWithQuestions(quizWithQuestions: QuizWithQuestions)*/
 
     fun getUpcomingQuizzesWithQuestions(): Flow<List<QuizWithQuestions>>
 
@@ -95,6 +95,7 @@ interface ReCallRepository {
 
      fun syncDataWorker()
 
+     suspend fun translateWord(word:String):Resource<Translation>
 
 
 }

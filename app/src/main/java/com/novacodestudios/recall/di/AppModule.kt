@@ -14,14 +14,18 @@ import com.novacodestudios.recall.data.datastore.ReCallDatastore
 import com.novacodestudios.recall.data.local.ReCallDao
 import com.novacodestudios.recall.data.local.ReCallDatabase
 import com.novacodestudios.recall.data.remote.GoogleAuthUiClient
+import com.novacodestudios.recall.data.remote.TranslationApi
 import com.novacodestudios.recall.data.repository.ReCallRepositoryImpl
 import com.novacodestudios.recall.domain.algorithm.SpacedRepetitionAlgorithm
 import com.novacodestudios.recall.domain.repository.ReCallRepository
+import com.novacodestudios.recall.util.Constants.BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 
@@ -47,7 +51,8 @@ object AppModule {
         algorithm: SpacedRepetitionAlgorithm,
         googleAuthUiClient: GoogleAuthUiClient,
         datastore: ReCallDatastore,
-        workManager: WorkManager
+        workManager: WorkManager,
+        api:TranslationApi
     ): ReCallRepository =
         ReCallRepositoryImpl(
             dao,
@@ -56,7 +61,8 @@ object AppModule {
             algorithm,
             googleAuthUiClient,
             datastore,
-            workManager
+            workManager,
+            api
         )
 
     @Singleton
@@ -94,6 +100,15 @@ object AppModule {
     @Provides
     fun injectWorkManager(@ApplicationContext context: Context): WorkManager =
         WorkManager.getInstance(context)
+
+
+    @Singleton
+        @Provides
+        fun injectTranslationAPI():TranslationApi=Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(TranslationApi::class.java)
 
 
 }

@@ -9,11 +9,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.novacodestudios.recall.data.datastore.ReCallDatastore
 import com.novacodestudios.recall.data.local.ReCallDao
+import com.novacodestudios.recall.data.mapper.toTranslation
 import com.novacodestudios.recall.data.remote.GoogleAuthUiClient
+import com.novacodestudios.recall.data.remote.TranslationApi
 import com.novacodestudios.recall.data.util.FirestoreCollections
 import com.novacodestudios.recall.domain.algorithm.SpacedRepetitionAlgorithm
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.domain.model.Quiz
+import com.novacodestudios.recall.domain.model.Translation
 import com.novacodestudios.recall.domain.model.Word
 import com.novacodestudios.recall.domain.model.relation.QuizWithQuestions
 import com.novacodestudios.recall.domain.model.toQuestion
@@ -21,6 +24,7 @@ import com.novacodestudios.recall.domain.model.toQuiz
 import com.novacodestudios.recall.domain.model.toWord
 import com.novacodestudios.recall.domain.repository.ReCallRepository
 import com.novacodestudios.recall.domain.worker.SyncDataWorker
+import com.novacodestudios.recall.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -32,7 +36,8 @@ class ReCallRepositoryImpl @Inject constructor(
     private val algorithm: SpacedRepetitionAlgorithm,
     private val googleAuthUiClient: GoogleAuthUiClient,
     private val datastore: ReCallDatastore,
-    private val workManager:WorkManager,
+    private val workManager: WorkManager,
+    private val api: TranslationApi
 ) : ReCallRepository {
     override fun getWordsFromRoom(): Flow<List<Word>> {
         return dao.getAllWordsFromRoom()
@@ -140,7 +145,6 @@ class ReCallRepositoryImpl @Inject constructor(
     }
 
 
-
     override suspend fun updateQuizzesToRoom(quizzes: List<Quiz>) {
         dao.updateQuizzes(*quizzes.toTypedArray())
     }
@@ -206,7 +210,7 @@ class ReCallRepositoryImpl @Inject constructor(
 
     }
 
-    override  fun getCurrentUserUid(): String {
+    override fun getCurrentUserUid(): String {
         return auth.currentUser?.uid ?: ""
     }
 
@@ -259,10 +263,10 @@ class ReCallRepositoryImpl @Inject constructor(
                 .document(quizId)
                 .collection(FirestoreCollections.QUESTIONS)
                 .get().await()
-            val questionList= mutableListOf<Question>()
+            val questionList = mutableListOf<Question>()
 
-            querySnapshot.forEach{
-                val question=it.toQuestion()
+            querySnapshot.forEach {
+                val question = it.toQuestion()
                 questionList.add(question)
             }
             return questionList.toList()
@@ -279,10 +283,10 @@ class ReCallRepositoryImpl @Inject constructor(
                 .collection(FirestoreCollections.QUIZZES)
                 .get().await()
 
-            val quizList= mutableListOf<Quiz>()
+            val quizList = mutableListOf<Quiz>()
 
             querySnapshot.forEach {
-                val quiz=it.toQuiz()
+                val quiz = it.toQuiz()
                 quizList.add(quiz)
             }
             return quizList.toList()
@@ -301,7 +305,7 @@ class ReCallRepositoryImpl @Inject constructor(
             .setRequiresBatteryNotLow(true)
             .build()
 
-        val oneTimeSyncDataRequest= OneTimeWorkRequestBuilder<SyncDataWorker>()
+        val oneTimeSyncDataRequest = OneTimeWorkRequestBuilder<SyncDataWorker>()
             .setInputData(workDataOf(SyncDataWorker.IS_PRIMARY_DB_ROOM to false))
             .setConstraints(syncConstraints)
             .addTag(SyncDataWorker.WORK_NAME)
@@ -310,7 +314,23 @@ class ReCallRepositoryImpl @Inject constructor(
         workManager.enqueue(oneTimeSyncDataRequest)
     }
 
+    override suspend fun translateWord(word: String): Resource<Translation> {
+        try {
+            val response = api.translateText(word)
+            if (response.isSuccessful) {
+                val translationDto =
+                    response.body() ?: return Resource.Error(message = "TranslationDto is null.")
+                return Resource.Success(translationDto.toTranslation(word))
+            } else {
+                val errorMessage = response.errorBody()?.string() ?: "Unknown error."
+                return Resource.Error(message = errorMessage)
+            }
+        } catch (e: Exception) {
+            val errorMessage = e.message ?: "Unknown error."
+            return Resource.Error(message = errorMessage)
+        }
 
+    }
 
 
 }

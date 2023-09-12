@@ -12,6 +12,7 @@ import com.novacodestudios.recall.domain.use_case.GetWordsBySearch
 import com.novacodestudios.recall.domain.use_case.GetWordsFromRoom
 import com.novacodestudios.recall.domain.use_case.SaveWordToRoom
 import com.novacodestudios.recall.domain.use_case.SetWordToFirestore
+import com.novacodestudios.recall.domain.use_case.TranslateWord
 import com.novacodestudios.recall.domain.use_case.UpdateWordInRoom
 import com.novacodestudios.recall.domain.use_case.ValidateMeaning
 import com.novacodestudios.recall.domain.use_case.ValidateWord
@@ -37,6 +38,7 @@ class WordViewModel @Inject constructor(
     private val getWordsBySearch: GetWordsBySearch,
     private val deleteWordFromRoom: DeleteWordFromRoom,
     private val deleteWordFromFirestore: DeleteWordFromFirestore,
+    private val translateWord: TranslateWord,
 ) : ViewModel() {
 
     var state by mutableStateOf(WordState())
@@ -108,7 +110,7 @@ class WordViewModel @Inject constructor(
             )
             updateWordInRoom(updatedWord)
             setWordToFirestore(updatedWord)
-            state=state.copy(isUpdateDialogVisible = false)
+            state = state.copy(isUpdateDialogVisible = false)
         }
 
     }
@@ -128,7 +130,7 @@ class WordViewModel @Inject constructor(
         viewModelScope.launch {
             deleteWordFromRoom(state.deletedWord!!)
             deleteWordFromFirestore(state.deletedWord!!)
-            state=state.copy(isDeleteDialogVisible = false)
+            state = state.copy(isDeleteDialogVisible = false)
         }
     }
 
@@ -162,16 +164,25 @@ class WordViewModel @Inject constructor(
     private fun saveWord() {
         val wordResult = validateWord(state.word)
         val meaningResult = validateMeaning(state.meaning)
-        val hasError = listOf(wordResult, meaningResult).any { it.data != true }
+        //val hasError = listOf(wordResult, meaningResult).any { it.data != true }
 
-        if (hasError) {
+        if (wordResult.data != true) {
             state = state.copy(
                 wordError = wordResult.message,
-                meaningError = meaningResult.message
+                //  meaningError = meaningResult.message
             )
             return
         }
         viewModelScope.launch {
+            if (meaningResult.data != true) {
+
+                when (val result = translateWord(word = state.word.lowercase(Locale.ROOT))) {
+                    is Resource.Error -> state=state.copy(meaningError = result.message)
+                    is Resource.Loading -> println(result.message)
+                    is Resource.Success -> state=state.copy(meaning = result.data!!.translatedWord)
+                }
+
+            }
             val word = Word(
                 name = state.word.lowercase(Locale.ROOT),
                 meaning = state.meaning.lowercase(Locale.ROOT)
