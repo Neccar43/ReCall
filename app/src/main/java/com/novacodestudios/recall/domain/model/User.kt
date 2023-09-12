@@ -1,17 +1,15 @@
 package com.novacodestudios.recall.domain.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-@Entity
 data class User(
-    //id leri firebase den alacağız
-    @PrimaryKey(autoGenerate = false)
-    val id: Int? = null,
-    val name:String,
-    val surname:String,
-    val email:String,
-)
-
-
+    val id: String,
+    val name: String?,
+    val email: String,
+) {
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "name" to name,
+            "email" to email
+        )
+    }
+}
 
