@@ -1,19 +1,11 @@
 package com.novacodestudios.recall.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.novacodestudios.recall.presentation.settings.SettingsViewModel
 
 private val LightColors = lightColorScheme(
     primary = md_theme_light_primary,
@@ -82,10 +74,12 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun ReCallTheme(
-    useDarkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable() () -> Unit
+    //useDarkTheme: Boolean = isSystemInDarkTheme(),
+    viewModel: SettingsViewModel = hiltViewModel(),
+    content: @Composable() () -> Unit,
 ) {
-    val colors = if (!useDarkTheme) {
+    val state = viewModel.state
+    val colors = if (!state.isDarkTheme) {
         LightColors
     } else {
         DarkColors
