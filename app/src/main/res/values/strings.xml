@@ -49,4 +49,5 @@
     <string name="update_word">Update the word</string>
     <string name="more">More</string>
     <string name="are_you_sure_delete_word">Are you sure you want to delete the word?</string>
+    <string name="streak">streak</string>
 </resources>

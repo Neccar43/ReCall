@@ -1,22 +1,25 @@
 package com.novacodestudios.recall.presentation.word
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.IconButton
-import androidx.compose.material.ListItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.FloatingActionButton
@@ -45,7 +48,7 @@ import java.util.Locale
 
 
 @Composable
-fun WordScreen( viewModel: WordViewModel = hiltViewModel()) {
+fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
     val state = viewModel.state
     Scaffold(
         floatingActionButton = {
@@ -156,35 +159,55 @@ fun WordList(words: List<Word>, viewModel: WordViewModel) {
             Divider()
         }
         items(words) {
-            WordItem(word = it, viewModel)
+            WordItem(word = it, viewModel = viewModel)
             Divider()
         }
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+
+
 @Composable
-fun WordItem(word: Word, viewModel: WordViewModel) {
+fun WordItem(
+    word: Word,
+    viewModel: WordViewModel
+) {
     var isExpanded by remember {
         mutableStateOf(false)
     }
     Box {
-        ListItem(
-            modifier = Modifier,
-            text = {
+        Row(modifier = Modifier.padding(vertical = 9.dp, horizontal = 15.dp)) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = word.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() },
                     fontWeight = FontWeight.Bold
                 )
-            },
-            secondaryText = {
                 Text(text = word.meaning.replaceFirstChar {
                     if (it.isLowerCase()) it.titlecase(
                         Locale.ROOT
                     ) else it.toString()
                 })
-            },
-            trailing = {
+            }
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                if (word.repetitions>3){
+                    Card {
+                        Row(modifier = Modifier.padding(horizontal = 3.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.LocalFireDepartment,
+                                contentDescription = stringResource(id = R.string.streak),
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(text = word.repetitions.toString())
+                        }
+                    }
+                }
+
+
                 IconButton(
                     onClick = { isExpanded = true },
                 ) {
@@ -195,7 +218,7 @@ fun WordItem(word: Word, viewModel: WordViewModel) {
                 }
             }
 
-        )
+        }
         DropdownMenu(
             expanded = isExpanded,
             onDismissRequest = { isExpanded = false },
@@ -204,7 +227,7 @@ fun WordItem(word: Word, viewModel: WordViewModel) {
             DropdownMenuItem(onClick = {
                 viewModel.onEvent(WordEvent.OnUpdateDialogVisibilityChange(true))
                 viewModel.onEvent(WordEvent.OnSetUpdatedWord(word))
-                isExpanded=false
+                isExpanded = false
             }) {
                 Text(text = stringResource(id = R.string.update_word))
             }
@@ -215,14 +238,17 @@ fun WordItem(word: Word, viewModel: WordViewModel) {
                         deletedWord = word
                     )
                 )
-                isExpanded=false
+                isExpanded = false
             }) {
                 Text(text = stringResource(id = R.string.delete_word))
             }
         }
+
     }
 
 }
+
+
 
 
 
