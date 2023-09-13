@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,16 +27,26 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.novacodestudios.recall.R
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.presentation.util.StandardButton
+import com.novacodestudios.recall.presentation.util.StandardCircularIndicator
 import com.novacodestudios.recall.presentation.util.StandardText
 import com.novacodestudios.recall.presentation.util.StandardTextField
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun QuestionScreen(
     viewModel: QuestionViewModel = hiltViewModel(),
-    onNavigateToResultScreen:(quizId:String)->Unit,
+    onNavigateToResultScreen: (quizId: String) -> Unit,
 
-) {
+    ) {
     val state = viewModel.state
+    LaunchedEffect(key1 = true){
+        viewModel.eventFlow.collectLatest {
+            when (it) {
+                QuestionViewModel.UIEvent.FinishQuiz -> onNavigateToResultScreen(state.questions[0].quizId.toString())
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -86,14 +97,12 @@ fun QuestionScreen(
                         viewModel.onEvent(QuestionEvent.StartTime)
                     } else {
                         viewModel.onEvent(QuestionEvent.FinishQuiz)
-                        onNavigateToResultScreen(state.questions[0].quizId.toString())
                     }
 
                 }
             )
-
-
         }
+        StandardCircularIndicator(isLoading = state.isLoading)
     }
 }
 

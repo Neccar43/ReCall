@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -24,34 +25,37 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.novacodestudios.recall.R
 import com.novacodestudios.recall.presentation.util.StandardButton
+import com.novacodestudios.recall.presentation.util.StandardCircularIndicator
 import com.novacodestudios.recall.presentation.util.StandardLinkedText
 import com.novacodestudios.recall.presentation.util.StandardPasswordField
 import com.novacodestudios.recall.presentation.util.StandardTextField
 import com.novacodestudios.recall.util.isNotNull
 import kotlinx.coroutines.flow.collectLatest
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInScreen(
     viewModel: SignInViewModel = hiltViewModel(),
-    onNavigateToMainGraph:()->Unit,
-    onNavigateToSignUpScreen:()->Unit,
-    ) {
+    onNavigateToMainGraph: () -> Unit,
+    onNavigateToSignUpScreen: () -> Unit,
+) {
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(key1 = true){
-        viewModel.eventFlow.collectLatest {event->
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is SignInViewModel.UIEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
-               is SignInViewModel.UIEvent.SignIn -> {
-                   onNavigateToMainGraph()
-               }
+                is SignInViewModel.UIEvent.SignIn -> {
+                    onNavigateToMainGraph()
+                }
             }
         }
     }
 
     Scaffold(
-        snackbarHost = {SnackbarHost(snackbarHostState)}
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -59,7 +63,7 @@ fun SignInScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val state =viewModel.state
+            val state = viewModel.state
             Card(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
@@ -79,8 +83,8 @@ fun SignInScreen(
                         )
                     },
                     keyboardType = KeyboardType.Email,
-                    text =state.email,
-                    onValueChange = {viewModel.onEvent(SignInEvent.EmailChanged(it))},
+                    text = state.email,
+                    onValueChange = { viewModel.onEvent(SignInEvent.EmailChanged(it)) },
                     isError = state.emailError.isNotNull(),
                     supportingText = state.emailError
                 )
@@ -94,7 +98,7 @@ fun SignInScreen(
                             contentDescription = stringResource(id = R.string.password)
                         )
                     },
-                    onValueChange = {viewModel.onEvent(SignInEvent.PasswordChanged(it))},
+                    onValueChange = { viewModel.onEvent(SignInEvent.PasswordChanged(it)) },
                     text = state.password,
                     isError = state.passwordError.isNotNull(),
                     supportingText = state.passwordError
@@ -121,7 +125,11 @@ fun SignInScreen(
                         onNavigateToSignUpScreen()
                     })
             }
+            StandardCircularIndicator(isLoading = state.isLoading)
+
         }
+        
+
     }
 
 }

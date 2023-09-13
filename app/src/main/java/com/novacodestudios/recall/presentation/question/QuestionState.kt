@@ -8,6 +8,7 @@ data class QuestionState(
     val answer:String="",
     val questionIndex:Int=0,
     val startTime:Long=0L,
-    val quiz: Quiz?=null
+    val quiz: Quiz?=null,
+    val isLoading:Boolean=false
 
     )

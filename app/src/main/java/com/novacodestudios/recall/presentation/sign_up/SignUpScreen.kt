@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.novacodestudios.recall.R
 import com.novacodestudios.recall.presentation.util.StandardButton
+import com.novacodestudios.recall.presentation.util.StandardCircularIndicator
 import com.novacodestudios.recall.presentation.util.StandardDivider
 import com.novacodestudios.recall.presentation.util.StandardLinkedText
 import com.novacodestudios.recall.presentation.util.StandardPasswordField
@@ -163,6 +164,7 @@ fun SignUpScreen(
 
                 StandardDivider(text = stringResource(id = R.string.or))
             }
+            StandardCircularIndicator(isLoading = state.isLoading)
         }
     }
 

@@ -1,5 +1,6 @@
 package com.novacodestudios.recall.presentation.result
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,7 +28,7 @@ import com.novacodestudios.recall.presentation.util.StandardText
 
 @Composable
 fun ResultScreen(
-    onNavigateToQuizHistoryScreen:()->Unit,
+    onNavigateToMainGraph: () -> Unit,
     viewModel: ResultViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
@@ -64,7 +66,7 @@ fun ResultScreen(
             }
             item {
                 StandardButton(
-                    onClick = { onNavigateToQuizHistoryScreen() },
+                    onClick = { onNavigateToMainGraph() },
                     text = stringResource(id = R.string.next),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -79,7 +81,12 @@ fun ResultScreen(
 fun QuestionItem(question: Question) {
     Column(
         horizontalAlignment = Alignment.Start,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                if (question.userAnswer == question.correctAnswer) Color(0xFFC5E1A5)
+                else Color(0xFFFFCDD2)
+            )
     ) {
         StandardText(
             text = stringResource(id = R.string.question) + " " + question.title,

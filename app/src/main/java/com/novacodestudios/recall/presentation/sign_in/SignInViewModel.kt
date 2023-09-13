@@ -36,6 +36,7 @@ class SignInViewModel @Inject constructor(
     }
 
     private fun signIn() {
+        state=state.copy(isLoading = true)
 
         val emailResult = validateEmail(state.email)
         val passwordResult = validatePassword(state.password)
@@ -50,14 +51,17 @@ class SignInViewModel @Inject constructor(
                 emailError = emailResult.message,
                 passwordError = passwordResult.message,
             )
+            state=state.copy(isLoading = false)
             return
         }
         viewModelScope.launch {
             try {
                 signInUserWithFirebase(state.email, state.password)
+                state=state.copy(isLoading = false)
                 _eventFlow.emit(UIEvent.SignIn)
                 syncDataWorkerUseCase()
             } catch (e: Exception) {
+                state=state.copy(isLoading = false)
                 _eventFlow.emit(UIEvent.ShowSnackbar(e.localizedMessage!!))
             }
         }

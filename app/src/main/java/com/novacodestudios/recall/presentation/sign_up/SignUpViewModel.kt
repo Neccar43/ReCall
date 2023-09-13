@@ -47,6 +47,7 @@ class SignUpViewModel @Inject constructor(
     }
 
     private fun signUp() {
+        state=state.copy(isLoading = true)
         val nameResult = validateName(state.name)
         val surnameResult = validateSurname(state.surname)
         val emailResult = validateEmail(state.email)
@@ -63,6 +64,7 @@ class SignUpViewModel @Inject constructor(
         ).any { it.data != true }
 
         if (hasError) {
+            state=state.copy(isLoading = false)
             state = state.copy(
                 nameError = nameResult.message,
                 surnameError = surnameResult.message,
@@ -75,8 +77,10 @@ class SignUpViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 signUpUserToFirebase(state.email, state.password)
+                state=state.copy(isLoading = false)
                 _eventFlow.emit(UIEvent.SignUp)
             } catch (e: Exception) {
+                state=state.copy(isLoading = false)
                 _eventFlow.emit(UIEvent.ShowSnackbar(e.localizedMessage!!))
             }
         }

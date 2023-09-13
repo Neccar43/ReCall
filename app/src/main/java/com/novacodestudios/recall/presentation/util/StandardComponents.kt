@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -268,4 +269,13 @@ fun StandardDialog(
     }
 
 
+}
+
+@Composable
+fun StandardCircularIndicator(isLoading:Boolean) {
+    if (isLoading){
+        Dialog(onDismissRequest = { }) {
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.background)
+        }
+    }
 }

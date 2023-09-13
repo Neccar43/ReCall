@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.novacodestudios.recall.R
 import com.novacodestudios.recall.domain.model.Word
+import com.novacodestudios.recall.presentation.util.StandardCircularIndicator
 import com.novacodestudios.recall.presentation.util.StandardDialog
 import com.novacodestudios.recall.presentation.util.StandardSearchBar
 import com.novacodestudios.recall.presentation.util.StandardTextField
@@ -147,6 +148,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                     )
                 }
             }
+            StandardCircularIndicator(isLoading = state.isLoading)
         }
     }
 }

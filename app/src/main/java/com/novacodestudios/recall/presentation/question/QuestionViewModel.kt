@@ -19,6 +19,8 @@ import com.novacodestudios.recall.util.Constants.QUIZ_ID
 import com.novacodestudios.recall.util.updateElementByIndex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -40,6 +42,10 @@ class QuestionViewModel @Inject constructor(
 ) : ViewModel() {
 
     var state by mutableStateOf(QuestionState())
+
+    private val _eventFlow = MutableSharedFlow<UIEvent>()
+    val eventFlow= _eventFlow.asSharedFlow()
+
 
     private var job: Job? = null
 
@@ -67,6 +73,8 @@ class QuestionViewModel @Inject constructor(
 
     private fun finishQuiz() {
         viewModelScope.launch {
+            state=state.copy(isLoading = true)
+
             state.questions.forEach {
                 val question=it.copy(version = it.version+1)
                 updateQuestionInRoom(question)
@@ -91,6 +99,8 @@ class QuestionViewModel @Inject constructor(
 
             updateWordsInRoom(calculatedWords)
             calculatedWords.forEach { setWordToFirestore(it) }
+            state=state.copy(isLoading = false)
+            _eventFlow.emit(UIEvent.FinishQuiz)
 
         }
     }
@@ -112,5 +122,8 @@ class QuestionViewModel @Inject constructor(
         if (state.questions.size != state.questionIndex + 1) {
             state = state.copy(questionIndex = state.questionIndex + 1)
         }
+    }
+    sealed class UIEvent{
+        data object FinishQuiz:UIEvent()
     }
 }

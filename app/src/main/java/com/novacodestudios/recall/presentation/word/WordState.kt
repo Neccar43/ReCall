@@ -14,6 +14,7 @@ data class WordState(
     val isUpdateDialogVisible:Boolean=false,
     val deletedWord:Word?=null,
     val updatedWord:Word?=null,
+    val isLoading:Boolean=false
 
 
     )

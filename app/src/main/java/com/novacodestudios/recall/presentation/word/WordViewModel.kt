@@ -162,24 +162,24 @@ class WordViewModel @Inject constructor(
     }
 
     private fun saveWord() {
+        state=state.copy(isLoading = true, isAddDialogVisible = false)
         val wordResult = validateWord(state.word)
         val meaningResult = validateMeaning(state.meaning)
-        //val hasError = listOf(wordResult, meaningResult).any { it.data != true }
 
         if (wordResult.data != true) {
+            state=state.copy(isLoading = false,isAddDialogVisible = true)
             state = state.copy(
                 wordError = wordResult.message,
-                //  meaningError = meaningResult.message
             )
             return
         }
         viewModelScope.launch {
             if (meaningResult.data != true) {
 
-                when (val result = translateWord(word = state.word.lowercase(Locale.ROOT))) {
-                    is Resource.Error -> state=state.copy(meaningError = result.message)
-                    is Resource.Loading -> println(result.message)
-                    is Resource.Success -> state=state.copy(meaning = result.data!!.translatedWord)
+                state = when (val result = translateWord(word = state.word.lowercase(Locale.ROOT))) {
+                    is Resource.Error -> state.copy(meaningError = result.message, isLoading = false,isAddDialogVisible = true)
+                    is Resource.Loading -> state.copy(isLoading = true)
+                    is Resource.Success -> state.copy(meaning = result.data!!.translatedWord, isLoading = false)
                 }
 
             }
@@ -194,7 +194,8 @@ class WordViewModel @Inject constructor(
                 meaning = "",
                 wordError = null,
                 meaningError = null,
-                isAddDialogVisible = false
+                isAddDialogVisible = false,
+                isLoading = false
             )
         }
     }
