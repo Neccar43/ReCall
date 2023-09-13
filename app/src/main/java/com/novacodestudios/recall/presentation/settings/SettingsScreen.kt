@@ -30,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.novacodestudios.recall.R
+import com.novacodestudios.recall.presentation.util.StandardCircularIndicator
 import com.novacodestudios.recall.presentation.util.StandardDialog
 import com.novacodestudios.recall.presentation.util.StandardText
 import kotlinx.coroutines.flow.collectLatest
@@ -43,7 +44,7 @@ fun SettingsScreen(
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest {
             when (it) {
-               is SettingsViewModel.UIEvent.SignIn -> {
+               is SettingsViewModel.UIEvent.SignOut -> {
                   onNavigateToAuthGraph()
                }
             }
@@ -135,6 +136,7 @@ fun SettingsScreen(
 
 
         }
+        StandardCircularIndicator(isLoading = state.isLoading)
     }
 }
 

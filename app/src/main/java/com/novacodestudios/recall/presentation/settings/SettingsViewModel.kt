@@ -29,9 +29,12 @@ class SettingsViewModel @Inject constructor(
     private val deleteAllQuizzes: DeleteAllQuizzes,
     private val deleteAllQuestions: DeleteAllQuestions
 ) : ViewModel() {
+
     var state by mutableStateOf(SettingsState())
+
     private val _eventFlow = MutableSharedFlow<UIEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
+
      fun onEvent(event: SettingsEvent) {
         when (event) {
             is SettingsEvent.SignOut -> {
@@ -66,8 +69,10 @@ class SettingsViewModel @Inject constructor(
 
     private  fun signOut() {
         viewModelScope.launch {
+            state=state.copy(isLoading = true)
             signOutUserFromFirebase()
-            _eventFlow.emit(UIEvent.SignIn)
+            state=state.copy(isLoading = false)
+            _eventFlow.emit(UIEvent.SignOut)
         }
     }
     private fun deleteAllTables(){
@@ -79,7 +84,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     sealed class UIEvent{
-        data object SignIn:UIEvent()
+        data object SignOut:UIEvent()
     }
 
 }
