@@ -42,7 +42,7 @@ fun QuestionScreen(
     LaunchedEffect(key1 = true){
         viewModel.eventFlow.collectLatest {
             when (it) {
-                QuestionViewModel.UIEvent.FinishQuiz -> onNavigateToResultScreen(state.questions[0].quizId.toString())
+                QuestionViewModel.UIEvent.FinishQuiz -> onNavigateToResultScreen(state.quiz?.id.toString())
             }
         }
     }

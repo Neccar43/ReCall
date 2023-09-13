@@ -2,9 +2,11 @@ package com.novacodestudios.recall.data.repository
 
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.domain.model.Quiz
+import com.novacodestudios.recall.domain.model.Translation
 import com.novacodestudios.recall.domain.model.Word
 import com.novacodestudios.recall.domain.model.relation.QuizWithQuestions
 import com.novacodestudios.recall.domain.repository.ReCallRepository
+import com.novacodestudios.recall.util.Resource
 import com.novacodestudios.recall.util.updateElementByIndex
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -161,7 +163,7 @@ class FakeReCallRepository : ReCallRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun deleteQuiz() {
+    override suspend fun deleteAllQuiz() {
         TODO("Not yet implemented")
     }
 
@@ -182,6 +184,10 @@ class FakeReCallRepository : ReCallRepository {
     }
 
     override fun syncDataWorker() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun translateWord(word: String): Resource<Translation> {
         TODO("Not yet implemented")
     }
 }

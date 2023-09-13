@@ -230,7 +230,7 @@ class ReCallRepositoryImpl @Inject constructor(
         dao.deleteAllQuestion()
     }
 
-    override suspend fun deleteQuiz() {
+    override suspend fun deleteAllQuiz() {
         dao.deleteAllQuizzes()
     }
 

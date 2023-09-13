@@ -6,6 +6,6 @@ import javax.inject.Inject
 class DeleteAllQuizzes @Inject constructor(private val repository: ReCallRepository) {
 
      suspend operator fun invoke(){
-        repository.deleteAllWords()
+        repository.deleteAllQuiz()
     }
 }

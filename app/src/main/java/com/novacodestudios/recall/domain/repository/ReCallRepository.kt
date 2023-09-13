@@ -83,7 +83,7 @@ interface ReCallRepository {
 
     suspend fun deleteAllQuestion()
 
-    suspend fun deleteQuiz()
+    suspend fun deleteAllQuiz()
 
     suspend fun getWordsFromFirestore(uid: String): List<Word>
 

@@ -119,7 +119,8 @@ class QuestionViewModel @Inject constructor(
                 ),
             answer = ""
         )
-        if (state.questions.size != state.questionIndex + 1) {
+        val isNotLastIndex=state.questions.size != state.questionIndex + 1
+        if (isNotLastIndex) {
             state = state.copy(questionIndex = state.questionIndex + 1)
         }
     }
