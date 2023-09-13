@@ -20,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -39,14 +38,17 @@ fun QuestionScreen(
     onNavigateToResultScreen: (quizId: String) -> Unit,
 
     ) {
-    val state = viewModel.state
+
     LaunchedEffect(key1 = true){
-        viewModel.eventFlow.collectLatest {
-            when (it) {
-                QuestionViewModel.UIEvent.FinishQuiz -> onNavigateToResultScreen(state.quiz?.id.toString())
+        viewModel.eventFlow.collectLatest {event->
+            when (event) {
+               is QuestionViewModel.UIEvent.FinishQuiz -> onNavigateToResultScreen(event.quizId.toString())
             }
         }
     }
+
+    val state = viewModel.state
+
     Box(
         modifier = Modifier
             .fillMaxSize()

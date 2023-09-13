@@ -100,7 +100,7 @@ class QuestionViewModel @Inject constructor(
             updateWordsInRoom(calculatedWords)
             calculatedWords.forEach { setWordToFirestore(it) }
             state=state.copy(isLoading = false)
-            _eventFlow.emit(UIEvent.FinishQuiz)
+            _eventFlow.emit(UIEvent.FinishQuiz(state.questions.first().quizId))
 
         }
     }
@@ -125,6 +125,6 @@ class QuestionViewModel @Inject constructor(
         }
     }
     sealed class UIEvent{
-        data object FinishQuiz:UIEvent()
+        data class FinishQuiz(val quizId:Int) : UIEvent()
     }
 }

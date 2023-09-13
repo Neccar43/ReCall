@@ -66,7 +66,7 @@ fun RootGraph(navController: NavHostController, currentUser: FirebaseUser?, cont
                     navController.navigate(
                         Screen.ResultScreen.route + "/$it"
                     ) {
-                        popUpTo(Screen.ResultScreen.route) {
+                        popUpTo(Graph.MAIN) {
                             inclusive = true
                         }
                     }
