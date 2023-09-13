@@ -76,9 +76,9 @@ fun RootGraph(navController: NavHostController, currentUser: FirebaseUser?, cont
                 Screen.ResultScreen.route + "/{${Constants.QUIZ_ID}}",
                 arguments = listOf(navArgument(Constants.QUIZ_ID) { type = NavType.IntType })
             ) {
-                ResultScreen(onNavigateToQuizHistoryScreen = {
-                    navController.navigate(Screen.QuizHistory.route) {
-                        popUpTo(Screen.QuizHistory.route) {
+                ResultScreen(onNavigateToMainGraph = {
+                    navController.navigate(Graph.MAIN) {
+                        popUpTo(Graph.MAIN) {
                             inclusive = true
                         }
                     }
