@@ -17,9 +17,12 @@ import kotlin.random.Random
     val repetitions: Int = 0,
     val interval: Int = 1,
     val nextRepetitions: String = currentISOLocaleDateTimeString(),
-    override val version: Long = 0L
+    override val version: Long = 0L,
+    val creationDate:String= currentISOLocaleDateTimeString(),
+    val isFavorite:Boolean=false,
+    val groupId:Int?=null
 ):Synchronizable {
-    fun toMap(): Map<String, Any> {
+    fun toMap(): Map<String, Any?> {
         return mapOf(
             "name" to name,
             "meaning" to meaning,
@@ -28,7 +31,11 @@ import kotlin.random.Random
             "repetitions" to repetitions,
             "interval" to interval,
             "nextRepetitions" to nextRepetitions,
-            "version" to version
+            "version" to version,
+            "creationDate" to creationDate,
+            "isFavorite" to isFavorite,
+            "groupId" to groupId
+
         )
     }
 }
@@ -51,6 +58,8 @@ fun List<Word>.copyAll(isInQuiz: Boolean): List<Word> =
 
 
 fun QueryDocumentSnapshot.toWord(): Word {
+    val creationDate=get("creationDate") as String? ?: currentISOLocaleDateTimeString()
+    val isFavorite=get("isFavorite") as Boolean? ?: false
     return Word(
         id = id.toInt(),
         name = get("name") as String,
@@ -60,8 +69,10 @@ fun QueryDocumentSnapshot.toWord(): Word {
         repetitions = (get("repetitions") as Number).toInt(),
         interval = (get("interval") as Number).toInt(),
         nextRepetitions = get("nextRepetitions") as String,
-        version= get("version") as Long
-
+        version= get("version") as Long,
+        creationDate=creationDate,
+        isFavorite= isFavorite,
+        groupId= (get("groupId") as Number?)?.toInt(),
     )
 }
 

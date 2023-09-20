@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class ReCallDatastore @Inject constructor( context: Context) {
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "THEME_KEY")
-    private val datastore = context.dataStore
+class ThemeDatastore @Inject constructor(context: Context) {
+    private val Context.themeDataStore: DataStore<Preferences> by preferencesDataStore(name = "THEME_KEY")
+    private val datastore = context.themeDataStore
 
     companion object{
         val darkModeKey= booleanPreferencesKey("DARK_MODE_KEY")

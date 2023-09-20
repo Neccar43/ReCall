@@ -1,5 +1,6 @@
 package com.novacodestudios.recall.presentation.util
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
@@ -24,14 +26,18 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -53,12 +59,13 @@ fun StandardTextField(
     cornerRadius: Int = 40,
     keyboardType: KeyboardType = KeyboardType.Text,
     text: String,
-    onValueChange:(String)->Unit
+    onValueChange: (String) -> Unit,
+    readOnly:Boolean=false
 
 ) {
     OutlinedTextField(
         value = text,
-        onValueChange = {onValueChange(it)},
+        onValueChange = { onValueChange(it) },
         modifier = modifier,
         label = { Text(text = hint) },
         leadingIcon = iconStart,
@@ -72,7 +79,8 @@ fun StandardTextField(
         singleLine = true,
         maxLines = 1,
         shape = RoundedCornerShape(cornerRadius),
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        readOnly = readOnly
 
     )
 
@@ -89,14 +97,14 @@ fun StandardPasswordField(
     onValueChange: (String) -> Unit,
     text: String
 
-    ) {
+) {
 
     var isPasswordVisible by remember {
         mutableStateOf(false)
     }
     OutlinedTextField(
         value = text,
-        onValueChange = {onValueChange(it)},
+        onValueChange = { onValueChange(it) },
         modifier = modifier,
         label = { Text(text = hint) },
         leadingIcon = iconStart,
@@ -157,7 +165,7 @@ fun StandardButton(
 fun StandardText(
     text: String,
     modifier: Modifier = Modifier,
-    imageVector: ImageVector?= null,
+    imageVector: ImageVector? = null,
     description: String? = null,
     fontSize: TextUnit = MaterialTheme.typography.headlineSmall.fontSize
 ) {
@@ -167,7 +175,7 @@ fun StandardText(
     ) {
         if (imageVector != null) {
             Icon(
-                imageVector =imageVector ,
+                imageVector = imageVector,
                 contentDescription = description,
                 modifier = Modifier.padding(end = 10.dp)
             )
@@ -189,14 +197,30 @@ fun StandardSearchBar(
     cornerRadius: Int = 40,
     keyboardType: KeyboardType = KeyboardType.Text,
     onSearch: (String) -> Unit,
-    text:String
+    text: String,
+    active: Boolean,
+    onActiveChange: (Boolean) -> Unit
 
 ) {
+    val focusManager = LocalFocusManager.current
+    LaunchedEffect(active) {
+        if (!active) {
+            focusManager.clearFocus()
+        }
+    }
 
+    BackHandler(enabled = active) {
+        onActiveChange(false)
+    }
     OutlinedTextField(
         value = text,
-        onValueChange = { onSearch(it)},
-        modifier = modifier,
+        onValueChange = { onSearch(it) },
+        modifier = modifier
+            .onFocusChanged {
+                if (it.isFocused) {
+                    onActiveChange(true)
+                }
+            },
         label = { Text(text = hint) },
         leadingIcon = {
             Icon(
@@ -209,11 +233,21 @@ fun StandardSearchBar(
         maxLines = 1,
         shape = RoundedCornerShape(cornerRadius),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        keyboardActions = KeyboardActions(onDone = { onSearch(text) })
+        keyboardActions = KeyboardActions(onDone = { onSearch(text) }),
+        textStyle = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+        trailingIcon = {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "close",
+                modifier = Modifier.clickable { onActiveChange(false);onSearch("") }
+            )
+
+        }
 
     )
 
 }
+
 
 @Composable
 fun StandardDivider(text: String = "") {
@@ -272,8 +306,8 @@ fun StandardDialog(
 }
 
 @Composable
-fun StandardCircularIndicator(isLoading:Boolean) {
-    if (isLoading){
+fun StandardCircularIndicator(isLoading: Boolean) {
+    if (isLoading) {
         Dialog(onDismissRequest = { }) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.background)
         }

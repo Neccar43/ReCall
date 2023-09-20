@@ -58,8 +58,6 @@ class ReCallApplication : Application(), Configuration.Provider {
 
         workManager.enqueue(oneTimeSyncDataRequest)
 
-        // TODO: Burda sıkıntı var room true yapınca firestore dan room a yüklenmesi gereken veriler siliniyor
-        // TODO: Kullanıcı bu uygulamayı kullanıyorken ön plandaysa true yap eğer arka plandaysa false yap
         val periodicSyncDataRequest = PeriodicWorkRequestBuilder<SyncDataWorker>(15, TimeUnit.MINUTES)
             .setInitialDelay(15,TimeUnit.MINUTES)
             .setInputData(workDataOf(SyncDataWorker.IS_PRIMARY_DB_ROOM to true))

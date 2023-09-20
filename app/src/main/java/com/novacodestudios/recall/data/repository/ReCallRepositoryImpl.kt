@@ -6,19 +6,22 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import com.novacodestudios.recall.data.datastore.ReCallDatastore
+import com.novacodestudios.recall.data.datastore.ThemeDatastore
 import com.novacodestudios.recall.data.local.ReCallDao
 import com.novacodestudios.recall.data.mapper.toTranslation
 import com.novacodestudios.recall.data.remote.GoogleAuthUiClient
 import com.novacodestudios.recall.data.remote.TranslationApi
 import com.novacodestudios.recall.data.util.FirestoreCollections
 import com.novacodestudios.recall.domain.algorithm.SpacedRepetitionAlgorithm
+import com.novacodestudios.recall.domain.model.Group
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.domain.model.Quiz
 import com.novacodestudios.recall.domain.model.Translation
 import com.novacodestudios.recall.domain.model.Word
 import com.novacodestudios.recall.domain.model.relation.QuizWithQuestions
+import com.novacodestudios.recall.domain.model.toGroup
 import com.novacodestudios.recall.domain.model.toQuestion
 import com.novacodestudios.recall.domain.model.toQuiz
 import com.novacodestudios.recall.domain.model.toWord
@@ -35,7 +38,7 @@ class ReCallRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val algorithm: SpacedRepetitionAlgorithm,
     private val googleAuthUiClient: GoogleAuthUiClient,
-    private val datastore: ReCallDatastore,
+    private val datastore: ThemeDatastore,
     private val workManager: WorkManager,
     private val api: TranslationApi
 ) : ReCallRepository {
@@ -180,13 +183,7 @@ class ReCallRepositoryImpl @Inject constructor(
 
     override suspend fun setQuestionToFirestore(uid: String, question: Question) {
         try {
-            firestore
-                .collection(FirestoreCollections.QUESTIONS)
-                .document(uid)
-                .collection(FirestoreCollections.QUESTIONS)
-                .document(question.quizId.toString())
-                .collection(FirestoreCollections.QUESTIONS)
-                .document(question.id.toString())
+            firestoreQuestionRef(uid,question)
                 .set(question.toMap()).await()
         } catch (e: Exception) {
             throw e
@@ -332,5 +329,92 @@ class ReCallRepositoryImpl @Inject constructor(
 
     }
 
+    override fun getWordsFromRoomByGroupId(groupId: Int?): Flow<List<Word>> {
+        return if (groupId == null) dao.getAllWordsFromRoom() else dao.getWordsByGroupId(groupId)
+    }
+
+    override fun getGroupsFromRoom(): Flow<List<Group>> {
+        return dao.getGroups()
+    }
+
+    override suspend fun updateGroupFromRoom(group: Group) {
+        dao.updateGroup(group)
+    }
+
+    override suspend fun insertGroupFromRoom(group: Group) {
+        dao.insertGroup(group)
+    }
+
+    override suspend fun deleteGroupFromRoom(group: Group) {
+        dao.deleteGroup(group)
+    }
+
+    override suspend fun setGroupFromFirestore(group: Group, uid: String) {
+        try {
+            firestoreGroupRef(group.id.toString(), uid)
+                .set(group.toMap()).await()
+        } catch (e: Exception) {
+            throw e
+        }
+
+    }
+
+    override suspend fun deleteGroupFromFirestore(group: Group, uid: String) {
+        try {
+            firestoreGroupRef(group.id.toString(), uid)
+                .delete().await()
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    override suspend fun getGroupsFromFirestore( uid: String): List<Group> {
+        try {
+            val querySnapshot = firestore.collection(FirestoreCollections.GROUPS)
+                .document(uid)
+                .collection(FirestoreCollections.GROUPS)
+                .get().await()
+
+            val groups= mutableListOf<Group>()
+
+            querySnapshot.forEach{
+                groups.add(it.toGroup())
+            }
+            return groups
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    override suspend fun deleteQuestionFromActiveQuizzesByWordIdFromRoom(wordId: Int) {
+        dao.deleteQuestionFromActiveQuizzesByWordId(wordId)
+    }
+
+    override suspend fun deleteQuestionFromFirestore(uid: String, question: Question) {
+        try {
+            firestoreQuestionRef(uid, question).delete().await()
+        } catch (e: Exception) {
+            throw e
+        }
+
+    }
+
+
+    private fun firestoreGroupRef(groupId: String, uid: String): DocumentReference {
+        return firestore.collection(FirestoreCollections.GROUPS)
+            .document(uid)
+            .collection(FirestoreCollections.GROUPS)
+            .document(groupId)
+    }
+
+    private fun firestoreQuestionRef(uid: String,question: Question):DocumentReference{
+        return  firestore
+            .collection(FirestoreCollections.QUESTIONS)
+            .document(uid)
+            .collection(FirestoreCollections.QUESTIONS)
+            .document(question.quizId.toString())
+            .collection(FirestoreCollections.QUESTIONS)
+            .document(question.id.toString())
+    }
 
 }

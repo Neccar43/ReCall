@@ -1,5 +1,6 @@
 package com.novacodestudios.recall.domain.repository
 
+import com.novacodestudios.recall.domain.model.Group
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.domain.model.Quiz
 import com.novacodestudios.recall.domain.model.Translation
@@ -73,7 +74,7 @@ interface ReCallRepository {
 
     suspend fun deleteWordFromFirestore(uid: String, word: Word)
 
-     fun getCurrentUserUid(): String
+    fun getCurrentUserUid(): String
 
     suspend fun updateQuizToRoom(quiz: Quiz)
 
@@ -87,15 +88,33 @@ interface ReCallRepository {
 
     suspend fun getWordsFromFirestore(uid: String): List<Word>
 
-    suspend fun getQuestionsFromFirestore(uid: String,quizId: String): List<Question>
+    suspend fun getQuestionsFromFirestore(uid: String, quizId: String): List<Question>
 
     suspend fun getQuizzesFromFirestore(uid: String): List<Quiz>
 
-     fun getQuizzesFromRoom():Flow<List<Quiz>>
+    fun getQuizzesFromRoom(): Flow<List<Quiz>>
 
-     fun syncDataWorker()
+    fun syncDataWorker()
 
-     suspend fun translateWord(word:String):Resource<Translation>
+    suspend fun translateWord(word: String): Resource<Translation>
 
+    fun getWordsFromRoomByGroupId(groupId: Int?): Flow<List<Word>>
+
+    fun getGroupsFromRoom(): Flow<List<Group>>
+
+    suspend fun updateGroupFromRoom(group: Group)
+
+    suspend fun insertGroupFromRoom(group: Group)
+
+    suspend fun deleteGroupFromRoom(group: Group)
+
+    suspend fun setGroupFromFirestore(group: Group, uid: String)
+
+    suspend fun deleteGroupFromFirestore(group: Group, uid: String)
+
+    suspend fun getGroupsFromFirestore( uid: String):List<Group>
+
+    suspend fun deleteQuestionFromActiveQuizzesByWordIdFromRoom(wordId:Int)
+    suspend fun deleteQuestionFromFirestore(uid: String,question: Question)
 
 }

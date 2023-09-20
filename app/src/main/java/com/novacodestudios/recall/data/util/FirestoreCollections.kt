@@ -5,4 +5,5 @@ object FirestoreCollections {
     const val WORDS = "words"
     const val QUIZZES = "quizzes"
     const val QUESTIONS = "questions"
+    const val GROUPS="groups"
 }

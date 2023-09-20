@@ -10,7 +10,9 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.novacodestudios.recall.data.datastore.ReCallDatastore
+import com.novacodestudios.recall.data.datastore.GroupDataStore
+import com.novacodestudios.recall.data.datastore.SortingDataStore
+import com.novacodestudios.recall.data.datastore.ThemeDatastore
 import com.novacodestudios.recall.data.local.ReCallDao
 import com.novacodestudios.recall.data.local.ReCallDatabase
 import com.novacodestudios.recall.data.remote.GoogleAuthUiClient
@@ -50,9 +52,9 @@ object AppModule {
         firestore: FirebaseFirestore,
         algorithm: SpacedRepetitionAlgorithm,
         googleAuthUiClient: GoogleAuthUiClient,
-        datastore: ReCallDatastore,
+        datastore: ThemeDatastore,
         workManager: WorkManager,
-        api:TranslationApi
+        api: TranslationApi
     ): ReCallRepository =
         ReCallRepositoryImpl(
             dao,
@@ -93,7 +95,15 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun injectReCallDatastore(@ApplicationContext context: Context) = ReCallDatastore(context)
+    fun injectThemeDatastore(@ApplicationContext context: Context) = ThemeDatastore(context)
+
+    @Singleton
+    @Provides
+    fun injectGroupDatastore(@ApplicationContext context: Context) = GroupDataStore(context)
+
+    @Singleton
+    @Provides
+    fun injectSortingDatastore(@ApplicationContext context: Context) = SortingDataStore(context)
 
 
     @Singleton
@@ -103,8 +113,8 @@ object AppModule {
 
 
     @Singleton
-        @Provides
-        fun injectTranslationAPI():TranslationApi=Retrofit.Builder()
+    @Provides
+    fun injectTranslationAPI(): TranslationApi = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()

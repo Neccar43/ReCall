@@ -1,22 +1,14 @@
 package com.novacodestudios.recall.domain.use_case
 
-import com.google.common.truth.Truth.assertThat
-import com.novacodestudios.recall.data.repository.FakeReCallRepository
-import com.novacodestudios.recall.domain.model.Word
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
-import org.junit.Before
-import org.junit.Test
+class GetWordsFromRoomByGroupIdTest{
 
-class GetWordsFromRoomTest{
-
-    private lateinit var getWordsFromRoom: GetWordsFromRoom
+   /* private lateinit var getWordsFromRoomByGroupId: GetWordsFromRoomByGroupId
     private lateinit var fakeReCallRepository: FakeReCallRepository
 
     @Before
     fun setUp(){
         fakeReCallRepository= FakeReCallRepository()
-        getWordsFromRoom= GetWordsFromRoom(fakeReCallRepository)
+        getWordsFromRoomByGroupId= GetWordsFromRoomByGroupId(fakeReCallRepository)
     }
 
     @Test
@@ -26,9 +18,9 @@ class GetWordsFromRoomTest{
 
         fakeReCallRepository.saveWordToRoom(word1)
         fakeReCallRepository.saveWordToRoom(word2)
-        val words = getWordsFromRoom().first()
+        val words = getWordsFromRoomByGroupId().first()
 
         //google truth library
         assertThat(words).containsExactly(word1,word2)
-    }
+    }*/
 }

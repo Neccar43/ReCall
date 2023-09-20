@@ -44,6 +44,8 @@ class SyncDataWorker @AssistedInject constructor(
                         val questionList = async { getQuestionsFromFirestore(uid, quizId) }
                         questionsFromFirestore.add(questionList.await())
                     }
+                    val groupsFromFirestore= async { getGroupsFromFirestore(uid)}
+
                     Log.d(TAG, "SyncDataWorker:firestore'dan veriler alındı")
 
                     val wordsFromRoom = async { getWordsFromRoom().first() }
@@ -55,6 +57,8 @@ class SyncDataWorker @AssistedInject constructor(
                         val questionList = async { getQuestionsByQuizId(quizId).first() }
                         questionsFromRoom.add(questionList.await())
                     }
+                    val groupsFromRoom= async { getGroupsFromRoom().first()}
+
                     Log.d(TAG, "SyncDataWorker:Room'dan veriler alındı")
 
                     if (isPrimaryDBRoom) {
@@ -74,6 +78,11 @@ class SyncDataWorker @AssistedInject constructor(
                             questionsFromFirestore.flatten()
                         ).forEach { setQuestionToFirestore(uid, it) }
 
+                        findElementsToAdd(
+                            groupsFromRoom.await(),
+                            groupsFromFirestore.await()
+                        ).forEach { setGroupFromFirestore(it,uid) }
+
                         findElementsToUpdate(
                             wordsFromRoom.await(),
                             wordsFromFirestore.await()
@@ -89,10 +98,20 @@ class SyncDataWorker @AssistedInject constructor(
                             questionsFromFirestore.flatten()
                         ).forEach { setQuestionToFirestore(uid, it) }
 
+                        findElementsToUpdate(
+                            groupsFromRoom.await(),
+                            groupsFromFirestore.await()
+                        ).forEach { setGroupFromFirestore(it,uid) }
+
                         findElementsToDelete(
                             wordsFromRoom.await(),
                             wordsFromFirestore.await()
                         ).forEach { deleteWordFromFirestore(uid, it) }
+
+                        findElementsToDelete(
+                            groupsFromRoom.await(),
+                            groupsFromFirestore.await()
+                        ).forEach { deleteGroupFromFirestore(it,uid) }
 
                     } else {
                         Log.d(TAG, "SyncDataWorker:primary database Firestore")
@@ -111,6 +130,11 @@ class SyncDataWorker @AssistedInject constructor(
                             questionsFromRoom.flatten()
                         ).also { saveQuestionsToRoom(it) }
 
+                        findElementsToAdd(
+                            groupsFromFirestore.await(),
+                            groupsFromRoom.await()
+                        ).forEach { insertGroupFromRoom(it) }
+
                         findElementsToUpdate(
                             wordsFromFirestore.await(),
                             wordsFromRoom.await()
@@ -126,10 +150,20 @@ class SyncDataWorker @AssistedInject constructor(
                             questionsFromRoom.flatten()
                         ).forEach { updateQuestionToRoom(it) }
 
+                        findElementsToUpdate(
+                            groupsFromFirestore.await(),
+                            groupsFromRoom.await()
+                        ).forEach { updateGroupFromRoom(it) }
+
                         findElementsToDelete(
                             wordsFromFirestore.await(),
                             wordsFromRoom.await()
                         ).forEach {deleteWordFromRoom(it) }
+
+                        findElementsToDelete(
+                            groupsFromFirestore.await(),
+                            groupsFromRoom.await()
+                        ).forEach { deleteGroupFromRoom(it) }
                     }
                 }
             }

@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.novacodestudios.recall.domain.model.Group
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.domain.model.Quiz
 import com.novacodestudios.recall.domain.model.Word
@@ -55,6 +56,9 @@ interface ReCallDao {
     @Query("SELECT * FROM Word")
     fun getAllWordsFromRoom(): Flow<List<Word>>
 
+    @Query("SELECT * FROM Word WHERE groupId=:groupId")
+    fun getWordsByGroupId(groupId:Int):Flow<List<Word>>
+
     @Query("SELECT * FROM Quiz")
     fun getAllQuizzesFromRoom(): Flow<List<Quiz>>
 
@@ -97,6 +101,21 @@ interface ReCallDao {
 
     @Query("UPDATE Quiz SET isCompleted=1 WHERE id=:quizId")
     suspend fun updateQuizIsCompleted(quizId: Int)
+
+    @Query("SELECT * FROM `Group`")
+    fun getGroups():Flow<List<Group>>
+
+    @Update
+    suspend fun updateGroup(group: Group)
+
+    @Insert
+    suspend fun insertGroup(group: Group)
+
+    @Delete
+    suspend fun deleteGroup(group: Group)
+
+    @Query("DELETE FROM Question WHERE userAnswer=NULL AND wordId=:wordId")
+    suspend fun deleteQuestionFromActiveQuizzesByWordId(wordId:Int)
 
 
 }
