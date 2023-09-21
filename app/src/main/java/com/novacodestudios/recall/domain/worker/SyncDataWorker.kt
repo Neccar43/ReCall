@@ -113,6 +113,11 @@ class SyncDataWorker @AssistedInject constructor(
                             groupsFromFirestore.await()
                         ).forEach { deleteGroupFromFirestore(it,uid) }
 
+                        findElementsToDelete(
+                            questionsFromRoom.flatten(),
+                            questionsFromFirestore.flatten()
+                        ).forEach { deleteQuestionFromFirestore(uid,it) }
+
                     } else {
                         Log.d(TAG, "SyncDataWorker:primary database Firestore")
                         findElementsToAdd(
@@ -164,6 +169,11 @@ class SyncDataWorker @AssistedInject constructor(
                             groupsFromFirestore.await(),
                             groupsFromRoom.await()
                         ).forEach { deleteGroupFromRoom(it) }
+
+                        findElementsToDelete(
+                            questionsFromFirestore.flatten(),
+                            questionsFromRoom.flatten()
+                        ).forEach { deleteQuestionFromRoom(it) }
                     }
                 }
             }

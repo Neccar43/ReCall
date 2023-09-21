@@ -9,6 +9,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.novacodestudios.recall.domain.worker.QuizWorker
@@ -30,20 +31,14 @@ class ReCallApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        val quizRequest = PeriodicWorkRequestBuilder<QuizWorker>(24, TimeUnit.HOURS)
-            .build()
-
         val workManager = WorkManager.getInstance(this)
 
-        workManager.enqueueUniquePeriodicWork(
-            QuizWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.UPDATE,
-            quizRequest
-        )
-        workManager.getWorkInfosForUniqueWorkLiveData(QuizWorker.WORK_NAME)
-            .observeForever { workInfos ->
-                Log.d(TAG, "${QuizWorker.WORK_NAME}: ${workInfos.map { it.state }}")
-            }
+        val quizConstraints=Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+
+        val oneTimeQuizRequest= OneTimeWorkRequestBuilder<QuizWorker>()
+            .setConstraints(quizConstraints)
+            .addTag(QuizWorker.WORK_NAME)
+            .build()
 
         val syncConstraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -56,7 +51,28 @@ class ReCallApplication : Application(), Configuration.Provider {
             .addTag(SyncDataWorker.WORK_NAME)
             .build()
 
-        workManager.enqueue(oneTimeSyncDataRequest)
+        workManager.enqueue(oneTimeQuizRequest)
+        workManager.getWorkInfoByIdLiveData(oneTimeQuizRequest.id)
+            .observeForever {workInfo->
+                if (workInfo.state == WorkInfo.State.SUCCEEDED){
+                    workManager.enqueue(oneTimeSyncDataRequest)
+                }
+        }
+
+        val periodicQuizRequest = PeriodicWorkRequestBuilder<QuizWorker>(24, TimeUnit.HOURS)
+            .setConstraints(quizConstraints)
+            .setInitialDelay(24,TimeUnit.HOURS)
+            .build()
+
+        workManager.enqueueUniquePeriodicWork(
+            QuizWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.UPDATE,
+            periodicQuizRequest
+        )
+        workManager.getWorkInfosForUniqueWorkLiveData(QuizWorker.WORK_NAME)
+            .observeForever { workInfos ->
+                Log.d(TAG, "${QuizWorker.WORK_NAME}: ${workInfos.map { it.state }}")
+            }
 
         val periodicSyncDataRequest = PeriodicWorkRequestBuilder<SyncDataWorker>(15, TimeUnit.MINUTES)
             .setInitialDelay(15,TimeUnit.MINUTES)

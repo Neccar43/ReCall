@@ -114,8 +114,11 @@ interface ReCallDao {
     @Delete
     suspend fun deleteGroup(group: Group)
 
-    @Query("DELETE FROM Question WHERE userAnswer=NULL AND wordId=:wordId")
-    suspend fun deleteQuestionFromActiveQuizzesByWordId(wordId:Int)
+    @Query("SELECT * FROM Question WHERE userAnswer IS NULL AND wordId=:wordId")
+     fun getQuestionFromActiveQuizzesByWordId(wordId:Int):Flow<List<Question>>
+
+     @Delete
+     suspend fun deleteQuestion(question: Question)
 
 
 }

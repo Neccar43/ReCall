@@ -7,7 +7,7 @@ import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.domain.model.Quiz
 import com.novacodestudios.recall.domain.model.Word
 
-@Database(entities = [Word::class,Question::class,Quiz::class,Group::class], version = 17)
+@Database(entities = [Word::class,Question::class,Quiz::class,Group::class], version = 18)
 abstract class ReCallDatabase:RoomDatabase() {
     abstract fun reCallDao(): ReCallDao
 }

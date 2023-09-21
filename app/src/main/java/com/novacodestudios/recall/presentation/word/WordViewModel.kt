@@ -9,9 +9,12 @@ import com.novacodestudios.recall.domain.model.Group
 import com.novacodestudios.recall.domain.model.Word
 import com.novacodestudios.recall.domain.use_case.DeleteGroupFromFirestore
 import com.novacodestudios.recall.domain.use_case.DeleteGroupFromRoom
+    import com.novacodestudios.recall.domain.use_case.DeleteQuestionFromFirestore
+import com.novacodestudios.recall.domain.use_case.DeleteQuestionFromRoom
 import com.novacodestudios.recall.domain.use_case.DeleteWordFromFirestore
 import com.novacodestudios.recall.domain.use_case.DeleteWordFromRoom
 import com.novacodestudios.recall.domain.use_case.GetGroupsFromRoom
+import com.novacodestudios.recall.domain.use_case.GetQuestionFromActiveQuizzesByWordIdFromRoom
 import com.novacodestudios.recall.domain.use_case.GetWordsBySearch
 import com.novacodestudios.recall.domain.use_case.GetWordsFromRoomByGroupId
 import com.novacodestudios.recall.domain.use_case.SaveGroupToRoom
@@ -58,6 +61,9 @@ class WordViewModel @Inject constructor(
     private val deleteGroupFromRoom: DeleteGroupFromRoom,
     private val deleteGroupFromFirestore: DeleteGroupFromFirestore,
     private val updateGroupFromRoom: UpdateGroupFromRoom,
+    private val getQuestionFromActiveQuizzesByWordIdFromRoom: GetQuestionFromActiveQuizzesByWordIdFromRoom,
+    private val deleteQuestionFromFirestore: DeleteQuestionFromFirestore,
+    private val deleteQuestionFromRoom: DeleteQuestionFromRoom
 ) : ViewModel() {
 
     var state by mutableStateOf(WordState())
@@ -156,7 +162,7 @@ class WordViewModel @Inject constructor(
             is WordEvent.OnGroupToMoveChange -> state = state.copy(groupToMove = event.group)
             WordEvent.OnWordsMove -> moveWordsToGroup()
             WordEvent.OnWordsMoveDialogVisibilityChanged -> {
-                val groups=state.groups.toMutableList()
+                val groups = state.groups.toMutableList()
                 groups.remove(state.selectedGroup)
                 if (groups.isEmpty()) {
                     viewModelScope.launch {
@@ -167,12 +173,20 @@ class WordViewModel @Inject constructor(
                 state = state.copy(isWordsMoveDialogVisible = !state.isWordsMoveDialogVisible)
             }
 
-            WordEvent.OnDeleteAllWordsCheckChanged -> state = state.copy(isDeleteAllWordsInGroupSelected = !state.isDeleteAllWordsInGroupSelected)
-            WordEvent.OnDeleteGroupDialogVisibilityChanged -> state = state.copy(isDeleteGroupDialogVisible = !state.isDeleteGroupDialogVisible, editedGroup = null)
+            WordEvent.OnDeleteAllWordsCheckChanged -> state =
+                state.copy(isDeleteAllWordsInGroupSelected = !state.isDeleteAllWordsInGroupSelected)
+
+            WordEvent.OnDeleteGroupDialogVisibilityChanged -> state = state.copy(
+                isDeleteGroupDialogVisible = !state.isDeleteGroupDialogVisible,
+                editedGroup = null
+            )
+
             is WordEvent.OnEditedGroupChanged -> state = state.copy(editedGroup = event.group)
             WordEvent.OnGroupDeleted -> deleteGroup()
             WordEvent.OnGroupUpdated -> updateGroupName()
-            is WordEvent.OnNewGroupNameChanged -> state = state.copy(newGroupName = event.newGroupName)
+            is WordEvent.OnNewGroupNameChanged -> state =
+                state.copy(newGroupName = event.newGroupName)
+
             WordEvent.OnUpdatedGroupDialogVisibilityChanged -> state = state.copy(
                 isUpdateGroupDialogVisible = !state.isUpdateGroupDialogVisible,
                 editedGroup = null,
@@ -183,13 +197,13 @@ class WordViewModel @Inject constructor(
     }
 
     private fun updateGroupName() {
-        var editedGroup=state.editedGroup ?: return
-        val newGroupName=state.newGroupName
+        var editedGroup = state.editedGroup ?: return
+        val newGroupName = state.newGroupName
         if (newGroupName.isBlank()) {
             state = state.copy(newGroupNameError = "Gurup adı boş olamaz.")
             return
         }
-        if (newGroupName==editedGroup.groupName){
+        if (newGroupName == editedGroup.groupName) {
             state = state.copy(newGroupNameError = "Yeni gurup adı öncekiyle aynı olamaz.")
             return
         }
@@ -201,7 +215,8 @@ class WordViewModel @Inject constructor(
         }
         state = state.copy(isLoading = true, isUpdateGroupDialogVisible = false)
         viewModelScope.launch {
-            editedGroup=editedGroup.copy(version = editedGroup.version+1, groupName = newGroupName)
+            editedGroup =
+                editedGroup.copy(version = editedGroup.version + 1, groupName = newGroupName)
             setGroupToFirestore(editedGroup)
             updateGroupFromRoom(editedGroup)
             state = state.copy(isLoading = false)
@@ -209,22 +224,35 @@ class WordViewModel @Inject constructor(
         }
 
     }
+    private fun deleteQuestionsInActiveQuizzes(wordId:Int){
+        viewModelScope.launch {
+            val questions =
+                async { getQuestionFromActiveQuizzesByWordIdFromRoom(wordId).first() }
+            questions.await().forEach { question ->
+                launch { deleteQuestionFromFirestore(question) }
+                launch { deleteQuestionFromRoom(question) }
+            }
+        }
+    }
 
     private fun deleteGroup() {
-        val deletedGroup=state.editedGroup ?: return
+        val deletedGroup = state.editedGroup ?: return
         state = state.copy(isLoading = true, isDeleteGroupDialogVisible = false)
-        val isAllWordDeleted=state.isDeleteAllWordsInGroupSelected
-        if (isAllWordDeleted){
+        val isAllWordDeleted = state.isDeleteAllWordsInGroupSelected
+        if (isAllWordDeleted) {
+            val deleteJob = viewModelScope.launch {
+                val wordsInGroup =
+                    async { getWordsFromRoomByGroupId(groupId = deletedGroup.id).first() }
+                wordsInGroup.await().forEach { word ->
+                    launch { deleteWordFromRoom(word) }
+                    launch { deleteWordFromFirestore(word) }
+                    deleteQuestionsInActiveQuizzes(word.id)
+                }
+                launch { deleteGroupFromRoom(deletedGroup) }
+                launch { deleteGroupFromFirestore(deletedGroup) }
+            }
             viewModelScope.launch {
-                val wordsInGroup=  async { getWordsFromRoomByGroupId(groupId = deletedGroup.id).first()}
-                wordsInGroup.await().forEach {word->
-                    deleteWordFromRoom(word)
-                    deleteWordFromFirestore(word)
-                }
-                launch {
-                    deleteGroupFromRoom(deletedGroup)
-                    deleteGroupFromFirestore(deletedGroup)
-                }
+                deleteJob.join()
                 state = state.copy(
                     isLoading = false,
                     editedGroup = null,
@@ -235,17 +263,19 @@ class WordViewModel @Inject constructor(
             }
             return
         }
-        viewModelScope.launch {
-            val wordsInGroup=  async { getWordsFromRoomByGroupId(groupId = deletedGroup.id).first()}
+        val deleteJob = viewModelScope.launch {
+            val wordsInGroup =
+                async { getWordsFromRoomByGroupId(groupId = deletedGroup.id).first() }
             wordsInGroup.await().forEach {
-                val updatedWord=it.copy(version = it.version+1, groupId = null)
-                updateWordInRoom(updatedWord)
-                setWordToFirestore(updatedWord)
+                val updatedWord = it.copy(version = it.version + 1, groupId = null)
+                launch { updateWordInRoom(updatedWord) }
+                launch { setWordToFirestore(updatedWord) }
             }
-            launch {
-                deleteGroupFromRoom(deletedGroup)
-                deleteGroupFromFirestore(deletedGroup)
-            }
+            launch { deleteGroupFromRoom(deletedGroup) }
+            launch { deleteGroupFromFirestore(deletedGroup) }
+        }
+        viewModelScope.launch {
+            deleteJob.join()
             state = state.copy(
                 isLoading = false,
                 editedGroup = null,
@@ -278,13 +308,17 @@ class WordViewModel @Inject constructor(
     }
 
     private fun bulkDeleteWords() {
-        viewModelScope.launch {
+       val bulkDeleteJob= viewModelScope.launch {
             state = state.copy(isLoading = true, isBulkDeleteDialogVisible = false)
-            state.selectedWords.forEach {
-                deleteWordFromRoom(it)
-                deleteWordFromFirestore(it)
+            state.selectedWords.forEach {word->
+                launch {deleteWordFromRoom(word)  }
+               launch { deleteWordFromFirestore(word) }
+                deleteQuestionsInActiveQuizzes(word.id)
             }
-            state = state.copy(isLoading = false, selectedWords = emptyList())
+        }
+        viewModelScope.launch {
+            bulkDeleteJob.join()
+            state = state.copy(isLoading = false, selectedWords = emptyList(), isLongClicked = false)
             _eventFlow.emit(SnackBarEvent("Kelimeler başarılı bir şekilde silindi."))
         }
     }
@@ -375,10 +409,17 @@ class WordViewModel @Inject constructor(
     }
 
     private fun deleteWord() {
+        state = state.copy(isDeleteDialogVisible = false)
+        val deleteJob= viewModelScope.launch {
+            val deletedWord=state.deletedWord ?: return@launch
+            launch {deleteWordFromRoom(deletedWord)  }
+            launch {deleteWordFromFirestore(deletedWord)  }
+            deleteQuestionsInActiveQuizzes(deletedWord.id)
+        }
         viewModelScope.launch {
-            deleteWordFromRoom(state.deletedWord!!)
-            deleteWordFromFirestore(state.deletedWord!!)
-            state = state.copy(isDeleteDialogVisible = false)
+            deleteJob.join()
+            state = state.copy(deletedWord = null)
+            _eventFlow.emit(SnackBarEvent("Kelime başarılı bir şekilde silindi."))
         }
     }
 

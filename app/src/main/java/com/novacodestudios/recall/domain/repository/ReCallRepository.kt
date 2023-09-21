@@ -114,7 +114,10 @@ interface ReCallRepository {
 
     suspend fun getGroupsFromFirestore( uid: String):List<Group>
 
-    suspend fun deleteQuestionFromActiveQuizzesByWordIdFromRoom(wordId:Int)
     suspend fun deleteQuestionFromFirestore(uid: String,question: Question)
+
+    fun getQuestionFromActiveQuizzesByWordId(wordId:Int):Flow<List<Question>>
+
+    suspend fun deleteQuestionFromRoom(question: Question)
 
 }

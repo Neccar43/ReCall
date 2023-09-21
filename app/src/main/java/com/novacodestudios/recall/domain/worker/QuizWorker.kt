@@ -15,8 +15,11 @@ import com.novacodestudios.recall.util.Constants.TAG
 import com.novacodestudios.recall.util.NotiKitBuilder
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 @HiltWorker
 class QuizWorker @AssistedInject constructor(
@@ -35,17 +38,30 @@ class QuizWorker @AssistedInject constructor(
         try {
             repository.apply {
                 if (shouldQuizCreate()) {
+                    coroutineScope {
+                        val quizJob=launch {
+                            Log.d(TAG, "QuizWorker: doWork if bloğu çalıştı")
+                            val uid = getCurrentUserUid()
 
-                    Log.d(TAG, "QuizWorker: doWork if bloğu çalıştı")
-                    getQuestionCandidateWords().map { words ->
-                       words.toMutableList().shuffle()
-                        words.chunked(MAX_QUESTION_SIZE)
-                            .dropLastWhile { it.size < MAX_QUESTION_SIZE }
-                    }.first().forEach { words ->
-                        val quizWithQuestions = words.toQuizWithQuestions()
-                        saveQuizToRoom(quizWithQuestions.quiz)
-                        saveQuestionsToRoom(quizWithQuestions.questions)
-                        updateWordsToRoom(words.copyAll(isInQuiz = true))
+                            val quizWords = async {
+                                getQuestionCandidateWords().map { words ->
+                                    words.toMutableList().shuffle()
+                                    words.chunked(MAX_QUESTION_SIZE)
+                                        .dropLastWhile { it.size < MAX_QUESTION_SIZE }
+                                }.first()
+                            }
+                            quizWords.await().forEach { words ->
+                                val quizWithQuestions = words.toQuizWithQuestions()
+                                val updatedWords=words.copyAll(isInQuiz = true)
+                                launch { saveQuizToRoom(quizWithQuestions.quiz)}
+                                launch { saveQuestionsToRoom(quizWithQuestions.questions)}
+                                launch { updateWordsToRoom(updatedWords)}
+                                launch { setQuizToFirestore(uid,quizWithQuestions.quiz) }
+                                launch {quizWithQuestions.questions.forEach {setQuestionToFirestore(uid,it) }}
+                                launch { updatedWords.forEach { setWordToFirestore(uid,it) } }
+                            }
+                        }
+                        quizJob.join()
                     }
 
                     NotiKitBuilder(applicationContext)

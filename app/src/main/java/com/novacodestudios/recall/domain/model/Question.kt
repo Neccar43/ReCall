@@ -3,10 +3,11 @@ package com.novacodestudios.recall.domain.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.firebase.firestore.QueryDocumentSnapshot
+import kotlin.random.Random
 
 @Entity
 data class Question(
-    @PrimaryKey(autoGenerate = true) override val id: Int? = null,
+    @PrimaryKey(autoGenerate = true) override val id: Int= Random.nextInt(Int.MAX_VALUE),
     val title: String,
     val correctAnswer: String,
     val userAnswer: String? = null,

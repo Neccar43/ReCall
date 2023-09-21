@@ -386,9 +386,7 @@ class ReCallRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun deleteQuestionFromActiveQuizzesByWordIdFromRoom(wordId: Int) {
-        dao.deleteQuestionFromActiveQuizzesByWordId(wordId)
-    }
+
 
     override suspend fun deleteQuestionFromFirestore(uid: String, question: Question) {
         try {
@@ -397,6 +395,14 @@ class ReCallRepositoryImpl @Inject constructor(
             throw e
         }
 
+    }
+
+    override fun getQuestionFromActiveQuizzesByWordId(wordId: Int): Flow<List<Question>> {
+        return dao.getQuestionFromActiveQuizzesByWordId(wordId)
+    }
+
+    override suspend fun deleteQuestionFromRoom(question: Question) {
+        dao.deleteQuestion(question)
     }
 
 

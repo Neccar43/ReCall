@@ -658,7 +658,7 @@ fun WordList(words: List<Word>, viewModel: WordViewModel) {
         item {
             Divider()
         }
-        items(words) {
+        items(items = words, key = {it.id}) {
             WordItem(word = it, viewModel = viewModel)
             Divider()
         }
