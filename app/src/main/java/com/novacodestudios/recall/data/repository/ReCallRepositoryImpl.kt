@@ -8,6 +8,7 @@ import androidx.work.workDataOf
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.novacodestudios.recall.data.datastore.MeaningVisibilityDataStore
 import com.novacodestudios.recall.data.datastore.ThemeDatastore
 import com.novacodestudios.recall.data.local.ReCallDao
 import com.novacodestudios.recall.data.mapper.toTranslation
@@ -40,7 +41,9 @@ class ReCallRepositoryImpl @Inject constructor(
     private val googleAuthUiClient: GoogleAuthUiClient,
     private val datastore: ThemeDatastore,
     private val workManager: WorkManager,
-    private val api: TranslationApi
+    private val api: TranslationApi,
+    private val  meaningVisibilityDataStore: MeaningVisibilityDataStore,
+
 ) : ReCallRepository {
     override fun getWordsFromRoom(): Flow<List<Word>> {
         return dao.getAllWordsFromRoom()
@@ -421,6 +424,14 @@ class ReCallRepositoryImpl @Inject constructor(
             .document(question.quizId.toString())
             .collection(FirestoreCollections.QUESTIONS)
             .document(question.id.toString())
+    }
+
+    override fun getMeaningVisibility(): Flow<Boolean?> {
+       return meaningVisibilityDataStore.getMeaningVisibility()
+    }
+
+    override suspend fun setMeaningVisibility(meaningVisibility: Boolean) {
+        meaningVisibilityDataStore.setMeaningVisibility(meaningVisibility)
     }
 
 }

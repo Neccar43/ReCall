@@ -8,7 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.novacodestudios.recall.domain.use_case.DeleteAllQuestions
 import com.novacodestudios.recall.domain.use_case.DeleteAllQuizzes
 import com.novacodestudios.recall.domain.use_case.DeleteAllWords
+import com.novacodestudios.recall.domain.use_case.GetMeaningVisibility
 import com.novacodestudios.recall.domain.use_case.GetTheme
+import com.novacodestudios.recall.domain.use_case.SetMeaningVisibility
 import com.novacodestudios.recall.domain.use_case.SetTheme
 import com.novacodestudios.recall.domain.use_case.SignOutUserFromFirebase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +29,9 @@ class SettingsViewModel @Inject constructor(
      getTheme: GetTheme,
     private val deleteAllWords: DeleteAllWords,
     private val deleteAllQuizzes: DeleteAllQuizzes,
-    private val deleteAllQuestions: DeleteAllQuestions
+    private val deleteAllQuestions: DeleteAllQuestions,
+    getMeaningVisibility: GetMeaningVisibility,
+    private val setMeaningVisibility: SetMeaningVisibility
 ) : ViewModel() {
 
     var state by mutableStateOf(SettingsState())
@@ -43,15 +47,22 @@ class SettingsViewModel @Inject constructor(
             }
             is SettingsEvent.ThemeChanged -> changeTheme(event.isDarkMode)
             is SettingsEvent.DeleteAccount -> deleteAccount()
+            is SettingsEvent.OnMeaningVisibilityChanged -> changeMeaningVisibility(event.isVisible)
         }
     }
 
     private var job: Job? = null
+    private var visibilityJob:Job?=null
 
     init {
         job?.cancel()
         job = getTheme().onEach {
             state = state.copy(isDarkTheme = it)
+        }.launchIn(viewModelScope)
+
+        visibilityJob?.cancel()
+        visibilityJob= getMeaningVisibility().onEach {isVisible->
+            state = state.copy(isMeaningVisible = isVisible)
         }.launchIn(viewModelScope)
 
     }
@@ -61,6 +72,12 @@ class SettingsViewModel @Inject constructor(
             setTheme(isDarkMode)
         }
 
+    }
+
+    private fun changeMeaningVisibility(isVisible:Boolean){
+        viewModelScope.launch {
+            setMeaningVisibility(isVisible)
+        }
     }
 
     private fun deleteAccount() {

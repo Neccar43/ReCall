@@ -338,27 +338,30 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                 }
                             }
                         } else {
-                            Row {
-                                IconButton(
-                                    onClick = { viewModel.onEvent(WordEvent.OnBulkDeleteDialogVisibilityChanged) },
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete selected words",
-                                    )
-                                }
-                                IconButton(
-                                    onClick = { viewModel.onEvent(WordEvent.OnWordsMoveDialogVisibilityChanged) },
-                                ) {
-                                    Icon(
-                                        painter =
-                                        painterResource(
-                                            id = R.drawable.move_group_f_ll0_wght400_grad0_opsz24
-                                        ),
-                                        contentDescription = "Move group selected words"
-                                    )
+                            if (state.selectedWords.isNotEmpty()){
+                                Row {
+                                    IconButton(
+                                        onClick = { viewModel.onEvent(WordEvent.OnBulkDeleteDialogVisibilityChanged) },
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete selected words",
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = { viewModel.onEvent(WordEvent.OnWordsMoveDialogVisibilityChanged) },
+                                    ) {
+                                        Icon(
+                                            painter =
+                                            painterResource(
+                                                id = R.drawable.move_group_f_ll0_wght400_grad0_opsz24
+                                            ),
+                                            contentDescription = "Move group selected words"
+                                        )
+                                    }
                                 }
                             }
+
 
                         }
                     }
@@ -678,6 +681,9 @@ fun WordItem(
     var isSelected by remember {
         mutableStateOf(viewModel.state.selectedWords.contains(word))
     }
+    var isMeaningShowing by remember {
+        mutableStateOf(false)
+    }
 
     Box(modifier = Modifier
         .combinedClickable(
@@ -689,13 +695,21 @@ fun WordItem(
 
             },
             onClick = {
-                if (isSelected) {
-                    isSelected = false
-                    viewModel.onEvent(WordEvent.OnWordUnSelected(word))
-                } else {
-                    isSelected = true
-                    viewModel.onEvent(WordEvent.OnWordSelected(word))
+                if (viewModel.state.isLongClicked) {
+                    if (isSelected) {
+                        isSelected = false
+                        viewModel.onEvent(WordEvent.OnWordUnSelected(word))
+                    } else {
+                        isSelected = true
+                        viewModel.onEvent(WordEvent.OnWordSelected(word))
+                    }
+                    return@combinedClickable
                 }
+                if (!viewModel.state.isMeaningVisible) {
+                    isMeaningShowing = !isMeaningShowing
+
+                }
+
             }
         )
         .background(if (viewModel.state.selectedWords.contains(word)) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.background)
@@ -708,18 +722,28 @@ fun WordItem(
             if (viewModel.state.isLongClicked) {
                 Checkbox(
                     checked = viewModel.state.selectedWords.contains(word),
-                    onCheckedChange = {})
+                    onCheckedChange = {
+                        if (isSelected) {
+                            isSelected = false
+                            viewModel.onEvent(WordEvent.OnWordUnSelected(word))
+                        } else {
+                            isSelected = true
+                            viewModel.onEvent(WordEvent.OnWordSelected(word))
+                        }
+                    })
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = word.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() },
                     fontWeight = FontWeight.Bold
                 )
-                Text(text = word.meaning.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(
-                        Locale.ROOT
-                    ) else it.toString()
-                })
+                if (viewModel.state.isMeaningVisible|| isMeaningShowing){
+                    Text(text = word.meaning.replaceFirstChar {
+                        if (it.isLowerCase()) it.titlecase(
+                            Locale.ROOT
+                        ) else it.toString()
+                    })
+                }
             }
             Row(
                 horizontalArrangement = Arrangement.End,

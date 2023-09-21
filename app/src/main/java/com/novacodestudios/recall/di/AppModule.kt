@@ -11,6 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.novacodestudios.recall.data.datastore.GroupDataStore
+import com.novacodestudios.recall.data.datastore.MeaningVisibilityDataStore
 import com.novacodestudios.recall.data.datastore.SortingDataStore
 import com.novacodestudios.recall.data.datastore.ThemeDatastore
 import com.novacodestudios.recall.data.local.ReCallDao
@@ -52,9 +53,10 @@ object AppModule {
         firestore: FirebaseFirestore,
         algorithm: SpacedRepetitionAlgorithm,
         googleAuthUiClient: GoogleAuthUiClient,
-        datastore: ThemeDatastore,
+        themeDatastore: ThemeDatastore,
         workManager: WorkManager,
-        api: TranslationApi
+        api: TranslationApi,
+        meaningVisibilityDataStore: MeaningVisibilityDataStore
     ): ReCallRepository =
         ReCallRepositoryImpl(
             dao,
@@ -62,9 +64,10 @@ object AppModule {
             firestore,
             algorithm,
             googleAuthUiClient,
-            datastore,
+            themeDatastore,
             workManager,
-            api
+            api,
+            meaningVisibilityDataStore
         )
 
     @Singleton
@@ -119,6 +122,10 @@ object AppModule {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(TranslationApi::class.java)
+
+    @Singleton
+    @Provides
+    fun injectMeaningVisibilityDatastore(@ApplicationContext context: Context) = MeaningVisibilityDataStore(context)
 
 
 }

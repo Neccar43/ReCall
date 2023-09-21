@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
@@ -91,6 +92,31 @@ fun SettingsScreen(
                     checked = state.isDarkTheme,
                     onCheckedChange = {
                         viewModel.onEvent(SettingsEvent.ThemeChanged(!state.isDarkTheme))
+                    },
+                    modifier = Modifier
+                        .height(14.dp)
+                        .padding(end = 20.dp)
+                )
+            }
+            Divider(modifier = dividerModifier)
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 15.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                StandardText(
+                    text = "Anlamlar görünmez",// TODO: string xml e ekle
+                    imageVector = Icons.Outlined.VisibilityOff,
+                    description = ""
+                )
+
+                Switch(
+                    checked = !state.isMeaningVisible,
+                    onCheckedChange = {
+                        viewModel.onEvent(SettingsEvent.OnMeaningVisibilityChanged(!state.isMeaningVisible))
                     },
                     modifier = Modifier
                         .height(14.dp)

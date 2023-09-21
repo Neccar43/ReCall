@@ -35,5 +35,6 @@ data class WordState(
     val isDeleteAllWordsInGroupSelected:Boolean=false,
     val newGroupName:String="",
     val newGroupNameError:String?=null,
-    val editedGroup:Group?=null
+    val editedGroup:Group?=null,
+    val isMeaningVisible:Boolean=true,
     )

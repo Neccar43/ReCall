@@ -14,6 +14,7 @@ import com.novacodestudios.recall.domain.use_case.DeleteQuestionFromRoom
 import com.novacodestudios.recall.domain.use_case.DeleteWordFromFirestore
 import com.novacodestudios.recall.domain.use_case.DeleteWordFromRoom
 import com.novacodestudios.recall.domain.use_case.GetGroupsFromRoom
+import com.novacodestudios.recall.domain.use_case.GetMeaningVisibility
 import com.novacodestudios.recall.domain.use_case.GetQuestionFromActiveQuizzesByWordIdFromRoom
 import com.novacodestudios.recall.domain.use_case.GetWordsBySearch
 import com.novacodestudios.recall.domain.use_case.GetWordsFromRoomByGroupId
@@ -63,7 +64,8 @@ class WordViewModel @Inject constructor(
     private val updateGroupFromRoom: UpdateGroupFromRoom,
     private val getQuestionFromActiveQuizzesByWordIdFromRoom: GetQuestionFromActiveQuizzesByWordIdFromRoom,
     private val deleteQuestionFromFirestore: DeleteQuestionFromFirestore,
-    private val deleteQuestionFromRoom: DeleteQuestionFromRoom
+    private val deleteQuestionFromRoom: DeleteQuestionFromRoom,
+    getMeaningVisibility: GetMeaningVisibility,
 ) : ViewModel() {
 
     var state by mutableStateOf(WordState())
@@ -436,9 +438,17 @@ class WordViewModel @Inject constructor(
 
     }
 
+    private var visibilityJob:Job?=null
+
     init {
+        visibilityJob?.cancel()
+        visibilityJob=getMeaningVisibility().onEach {
+            state = state.copy(isMeaningVisible = it)
+        }.launchIn(viewModelScope)
+
         getWords(state.wordOrder)
         getGroups()
+
     }
 
     private var wordJob: Job? = null

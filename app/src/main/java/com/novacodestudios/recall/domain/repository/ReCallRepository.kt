@@ -120,4 +120,8 @@ interface ReCallRepository {
 
     suspend fun deleteQuestionFromRoom(question: Question)
 
+    suspend fun setMeaningVisibility(meaningVisibility: Boolean)
+
+    fun getMeaningVisibility(): Flow<Boolean?>
+
 }
