@@ -70,7 +70,15 @@ fun RootGraph(navController: NavHostController, currentUser: FirebaseUser?, cont
                             inclusive = true
                         }
                     }
-                })
+                },
+                    onNavigateToMainGraph = {
+                        navController.navigate(Graph.MAIN) {
+                            popUpTo(Graph.MAIN) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                )
             }
             composable(
                 Screen.ResultScreen.route + "/{${Constants.QUIZ_ID}}",

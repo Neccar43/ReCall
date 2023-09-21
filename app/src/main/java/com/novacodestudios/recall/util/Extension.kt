@@ -48,3 +48,13 @@ fun currentISOLocaleDateTimeString(): String {
     val currentDateTime = LocalDateTime.now()
     return currentDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 }
+
+fun formatTime(milliSec:Long):String{
+    val second=milliSec/1000
+    val minute=second/60
+    val remainSecond=second%60
+    return when{
+        minute>0 && remainSecond>0->"$minute dk $remainSecond sn"
+        else-> "$remainSecond sn"
+    }
+}

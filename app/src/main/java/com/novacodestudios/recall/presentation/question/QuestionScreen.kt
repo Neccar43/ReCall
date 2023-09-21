@@ -28,6 +28,7 @@ import com.novacodestudios.recall.R
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.presentation.util.StandardButton
 import com.novacodestudios.recall.presentation.util.StandardCircularIndicator
+import com.novacodestudios.recall.presentation.util.StandardDialog
 import com.novacodestudios.recall.presentation.util.StandardText
 import com.novacodestudios.recall.presentation.util.StandardTextField
 import kotlinx.coroutines.flow.collectLatest
@@ -36,6 +37,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun QuestionScreen(
     viewModel: QuestionViewModel = hiltViewModel(),
     onNavigateToResultScreen: (quizId: String) -> Unit,
+    onNavigateToMainGraph: () -> Unit
 
     ) {
 
@@ -48,6 +50,9 @@ fun QuestionScreen(
     }
 
     val state = viewModel.state
+    var isCancelClicked by remember {
+        mutableStateOf(false)
+    }
 
     Box(
         modifier = Modifier
@@ -74,7 +79,7 @@ fun QuestionScreen(
                 modifier = Modifier.padding(8.dp)
             ) {
                 OutlinedButton(
-                    onClick = { viewModel.onEvent(QuestionEvent.CancelQuiz) }
+                    onClick = {isCancelClicked=true }
                 ) {
                     Text(text = stringResource(id = R.string.skip))
                 }
@@ -105,6 +110,17 @@ fun QuestionScreen(
             )
         }
         StandardCircularIndicator(isLoading = state.isLoading)
+
+        if (isCancelClicked){
+            StandardDialog(
+                title = "Quizden çık",
+                onDismiss = { isCancelClicked=false },
+                onRequest = {  onNavigateToMainGraph() }
+            ) {
+                StandardText(text = "Quizi terk etmek istediğinizden emin misiniz?")
+            }
+        }
+
     }
 }
 

@@ -19,6 +19,7 @@ import com.novacodestudios.recall.util.Constants.QUIZ_ID
 import com.novacodestudios.recall.util.updateElementByIndex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
@@ -63,7 +64,6 @@ class QuestionViewModel @Inject constructor(
 
     fun onEvent(event: QuestionEvent) {
         when (event) {
-            is QuestionEvent.CancelQuiz -> TODO()
             is QuestionEvent.AnswerChange -> state = state.copy(answer = event.answer)
             is QuestionEvent.SubmitAnswer -> answerQuestion(event.answer, event.responseTime)
             is QuestionEvent.StartTime -> state = state.copy(startTime = System.currentTimeMillis())
@@ -72,36 +72,41 @@ class QuestionViewModel @Inject constructor(
     }
 
     private fun finishQuiz() {
-        viewModelScope.launch {
+      val job=  viewModelScope.launch {
             state=state.copy(isLoading = true)
 
             state.questions.forEach {
                 val question=it.copy(version = it.version+1)
-                updateQuestionInRoom(question)
-                setQuestionToFirestore(question)
+                launch { updateQuestionInRoom(question)}
+                launch { setQuestionToFirestore(question)}
             }
 
             state.quiz?.let {
                 val quiz=it.copy(isCompleted = true, version = it.version+1)
-                updateQuizInRoom(quiz)
-                setQuizToFirestore(quiz)
+                launch{ updateQuizInRoom(quiz) }
+                launch{ setQuizToFirestore(quiz) }
             }
 
-            val calculatedWords = state.questions.map { question ->
-                val word = getWordByIdFromRoom(question.wordId!!)
+            val calculatedWords = async{
+                state.questions.map { question ->
+                    val word = getWordByIdFromRoom(question.wordId!!)
 
-                calculateNextRepetitionDate(
-                    word = word.copy(isInQuiz = false, version = word.version+1),
-                    isAnswerCorrect = question.correctAnswer == question.userAnswer,
-                    responseTime = question.responseTime!!
-                )
+                    calculateNextRepetitionDate(
+                        word = word.copy(isInQuiz = false, version = word.version + 1),
+                        isAnswerCorrect = question.correctAnswer == question.userAnswer,
+                        responseTime = question.responseTime!!
+                    )
+                }
             }
 
-            updateWordsInRoom(calculatedWords)
-            calculatedWords.forEach { setWordToFirestore(it) }
+            launch{ updateWordsInRoom(calculatedWords.await()) }
+            launch{ calculatedWords.await().forEach { setWordToFirestore(it) } }
+
+        }
+        viewModelScope.launch {
+            job.join()
             state=state.copy(isLoading = false)
             _eventFlow.emit(UIEvent.FinishQuiz(state.questions.first().quizId))
-
         }
     }
 

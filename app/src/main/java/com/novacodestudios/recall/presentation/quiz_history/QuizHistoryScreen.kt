@@ -18,9 +18,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.novacodestudios.recall.domain.model.Quiz
+import com.novacodestudios.recall.domain.model.QuizDetail
+import com.novacodestudios.recall.util.formatTime
 import com.novacodestudios.recall.util.relativeTimeAgo
 
 
@@ -35,7 +38,7 @@ fun QuizHistoryScreen(
 
     LazyColumn(contentPadding = PaddingValues(8.dp)) {
         state.activeQuiz?.let { activeQuiz ->
-            item {
+            item(key = activeQuiz.id) {
                 NewQuizRow(activeQuiz,
                     onClick = { onNavigateToQuestionScreen(activeQuiz.id.toString()) })
             }
@@ -43,24 +46,28 @@ fun QuizHistoryScreen(
         item {
             Divider()
         }
-        items(state.pastQuizzes) {quiz->
+        items(state.pastQuizzes,key = {it.id}) {quizDetail->
             QuizItem(
-                quiz = quiz,
+                quizDetail = quizDetail,
                 context = context,
-                onClick = { onNavigateToResultScreen(quiz.id.toString()) })
+                onClick = { onNavigateToResultScreen(quizDetail.id.toString()) })
         }
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun QuizItem(quiz: Quiz, context: Context, onClick: () -> Unit) {
+fun QuizItem(quizDetail: QuizDetail, context: Context, onClick: () -> Unit) {
     ListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        text = { Text(text = "Başarı oranı:") },
-        secondaryText = { Text(text = relativeTimeAgo(quiz.date, context)) }
+        text = { Text(
+            text = "Doğru:${quizDetail.correctAnswerCount}   Yanlış:${quizDetail.wrongAnswerCount}   Başarı oranı: %${quizDetail.successRate}",
+            fontWeight = FontWeight.Bold,
+
+        ) },
+        secondaryText = { Text(text = relativeTimeAgo(quizDetail.creationDate, context) + "   Geçen süre:${formatTime(quizDetail.totalCompletionTime)}") }
     )
     Divider()
 }
