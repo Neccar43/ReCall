@@ -56,7 +56,8 @@ object AppModule {
         themeDatastore: ThemeDatastore,
         workManager: WorkManager,
         api: TranslationApi,
-        meaningVisibilityDataStore: MeaningVisibilityDataStore
+        meaningVisibilityDataStore: MeaningVisibilityDataStore,
+        groupDataStore: GroupDataStore,
     ): ReCallRepository =
         ReCallRepositoryImpl(
             dao,
@@ -67,7 +68,8 @@ object AppModule {
             themeDatastore,
             workManager,
             api,
-            meaningVisibilityDataStore
+            meaningVisibilityDataStore,
+            groupDataStore
         )
 
     @Singleton

@@ -8,6 +8,7 @@ import androidx.work.workDataOf
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.novacodestudios.recall.data.datastore.GroupDataStore
 import com.novacodestudios.recall.data.datastore.MeaningVisibilityDataStore
 import com.novacodestudios.recall.data.datastore.ThemeDatastore
 import com.novacodestudios.recall.data.local.ReCallDao
@@ -43,6 +44,7 @@ class ReCallRepositoryImpl @Inject constructor(
     private val workManager: WorkManager,
     private val api: TranslationApi,
     private val  meaningVisibilityDataStore: MeaningVisibilityDataStore,
+    private val  groupDataStore: GroupDataStore,
 
 ) : ReCallRepository {
     override fun getWordsFromRoom(): Flow<List<Word>> {
@@ -428,6 +430,14 @@ class ReCallRepositoryImpl @Inject constructor(
 
     override fun getMeaningVisibility(): Flow<Boolean?> {
        return meaningVisibilityDataStore.getMeaningVisibility()
+    }
+
+    override suspend fun setActiveGroupId(groupId: Int) {
+        groupDataStore.setGroupId(groupId)
+    }
+
+    override fun getActiveGroupId(): Flow<Int?> {
+        return groupDataStore.getGroupId()
     }
 
     override suspend fun setMeaningVisibility(meaningVisibility: Boolean) {

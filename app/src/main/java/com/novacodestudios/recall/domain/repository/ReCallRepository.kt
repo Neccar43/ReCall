@@ -124,4 +124,8 @@ interface ReCallRepository {
 
     fun getMeaningVisibility(): Flow<Boolean?>
 
+    suspend fun setActiveGroupId(groupId: Int)
+
+    fun getActiveGroupId(): Flow<Int?>
+
 }

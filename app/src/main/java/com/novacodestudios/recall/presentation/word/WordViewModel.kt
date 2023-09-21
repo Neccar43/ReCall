@@ -13,6 +13,7 @@ import com.novacodestudios.recall.domain.use_case.DeleteGroupFromRoom
 import com.novacodestudios.recall.domain.use_case.DeleteQuestionFromRoom
 import com.novacodestudios.recall.domain.use_case.DeleteWordFromFirestore
 import com.novacodestudios.recall.domain.use_case.DeleteWordFromRoom
+import com.novacodestudios.recall.domain.use_case.GetActiveGroupId
 import com.novacodestudios.recall.domain.use_case.GetGroupsFromRoom
 import com.novacodestudios.recall.domain.use_case.GetMeaningVisibility
 import com.novacodestudios.recall.domain.use_case.GetQuestionFromActiveQuizzesByWordIdFromRoom
@@ -20,6 +21,7 @@ import com.novacodestudios.recall.domain.use_case.GetWordsBySearch
 import com.novacodestudios.recall.domain.use_case.GetWordsFromRoomByGroupId
 import com.novacodestudios.recall.domain.use_case.SaveGroupToRoom
 import com.novacodestudios.recall.domain.use_case.SaveWordToRoom
+import com.novacodestudios.recall.domain.use_case.SetActiveGroupId
 import com.novacodestudios.recall.domain.use_case.SetGroupToFirestore
 import com.novacodestudios.recall.domain.use_case.SetWordToFirestore
 import com.novacodestudios.recall.domain.use_case.TranslateWord
@@ -66,6 +68,8 @@ class WordViewModel @Inject constructor(
     private val deleteQuestionFromFirestore: DeleteQuestionFromFirestore,
     private val deleteQuestionFromRoom: DeleteQuestionFromRoom,
     getMeaningVisibility: GetMeaningVisibility,
+    getActiveGroupId: GetActiveGroupId,
+    private val setActiveGroupId: SetActiveGroupId
 ) : ViewModel() {
 
     var state by mutableStateOf(WordState())
@@ -122,6 +126,7 @@ class WordViewModel @Inject constructor(
                 if (event.group == state.selectedGroup)
                     return
                 state = state.copy(selectedGroup = event.group)
+                viewModelScope.launch { setActiveGroupId(event.group?.id ?:-1) }
                 getWords(state.wordOrder)
             }
 
@@ -439,6 +444,8 @@ class WordViewModel @Inject constructor(
     }
 
     private var visibilityJob:Job?=null
+    private var activeGroupJob:Job?=null
+
 
     init {
         visibilityJob?.cancel()
@@ -446,8 +453,19 @@ class WordViewModel @Inject constructor(
             state = state.copy(isMeaningVisible = it)
         }.launchIn(viewModelScope)
 
-        getWords(state.wordOrder)
-        getGroups()
+        val groups=viewModelScope.async { getGroupsFromRoom().first() }
+        activeGroupJob?.cancel()
+        activeGroupJob=getActiveGroupId().onEach {activeGroupId->
+            state = state.copy(groups = groups.await())
+
+            val activeGroup= state.groups.find { it.id==activeGroupId }
+            state = state.copy(selectedGroup = activeGroup)
+
+            getWords(state.wordOrder)
+        }.launchIn(viewModelScope)
+
+
+
 
     }
 
@@ -461,14 +479,8 @@ class WordViewModel @Inject constructor(
 
     }
 
-    private var groupJob: Job? = null
 
-    private fun getGroups() {
-        groupJob?.cancel()
-        groupJob = getGroupsFromRoom().onEach { groups ->
-            state = state.copy(groups = groups)
-        }.launchIn(viewModelScope)
-    }
+
 
     private fun saveWord() {
         state = state.copy(isLoading = true, isAddDialogVisible = false)
