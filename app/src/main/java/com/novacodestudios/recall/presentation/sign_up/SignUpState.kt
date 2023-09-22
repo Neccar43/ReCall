@@ -1,10 +1,8 @@
 package com.novacodestudios.recall.presentation.sign_up
 
 data class SignUpState(
-    val name: String = "",
-    val nameError: String? = null,
-    val surname: String = "",
-    val surnameError: String? = null,
+    val fullName: String = "",
+    val fullNameError: String? = null,
     val email: String = "",
     val emailError: String? = null,
     val password: String = "",

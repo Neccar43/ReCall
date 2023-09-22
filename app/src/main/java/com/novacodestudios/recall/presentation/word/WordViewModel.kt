@@ -445,7 +445,7 @@ class WordViewModel @Inject constructor(
 
     private var visibilityJob:Job?=null
     private var activeGroupJob:Job?=null
-
+    private var groupsJob:Job?=null
 
     init {
         visibilityJob?.cancel()
@@ -453,14 +453,15 @@ class WordViewModel @Inject constructor(
             state = state.copy(isMeaningVisible = it)
         }.launchIn(viewModelScope)
 
-        val groups=viewModelScope.async { getGroupsFromRoom().first() }
+        groupsJob?.cancel()
+        groupsJob=getGroupsFromRoom().onEach {groups->
+            state = state.copy(groups =groups )
+        }.launchIn(viewModelScope)
+
         activeGroupJob?.cancel()
         activeGroupJob=getActiveGroupId().onEach {activeGroupId->
-            state = state.copy(groups = groups.await())
-
-            val activeGroup= state.groups.find { it.id==activeGroupId }
+            val activeGroup= getGroupsFromRoom().first().find { it.id==activeGroupId }
             state = state.copy(selectedGroup = activeGroup)
-
             getWords(state.wordOrder)
         }.launchIn(viewModelScope)
 

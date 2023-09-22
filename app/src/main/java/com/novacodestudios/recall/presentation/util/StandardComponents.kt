@@ -138,13 +138,15 @@ fun StandardPasswordField(
 fun StandardLinkedText(
     modifier: Modifier = Modifier,
     text: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    fontSize: TextUnit=MaterialTheme.typography.bodyMedium.fontSize
 ) {
     Text(
         text = text,
         modifier = modifier.clickable { onClick() },
         color = MaterialTheme.colorScheme.primary,
-        textDecoration = TextDecoration.Underline
+        textDecoration = TextDecoration.Underline,
+        fontSize = fontSize
     )
 
 }

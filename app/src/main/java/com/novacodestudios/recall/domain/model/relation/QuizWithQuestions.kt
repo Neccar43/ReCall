@@ -16,7 +16,7 @@ data class QuizWithQuestions(
 ){
     fun toQuizDetail():QuizDetail {
         val correctCount=questions.count{it.userAnswer==it.correctAnswer}
-        val totalTime=questions.sumOf { it.responseTime!! }
+        val totalTime=questions.sumOf { it.responseTime?:0L }
         return QuizDetail(
             id = quiz.id,
             creationDate = quiz.date,

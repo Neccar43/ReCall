@@ -7,9 +7,9 @@
     <string name="repeat_password">Repeat password</string>
     <string name="email">Email</string>
     <string name="sign_up">Sign up</string>
-    <string name="already_member">Already a member? Sign in</string>
+    <string name="already_member">Already a member? </string>
     <string name="or">or</string>
-    <string name="do_not_have_account">Don\'t have an account? Sign up.</string>
+    <string name="do_not_have_account">Don\'t have an account? </string>
     <string name="sign_in">Sign in</string>
     <string name="forget_password">Forgot your password?</string>
     <string name="word">Word</string>
@@ -50,4 +50,6 @@
     <string name="more">More</string>
     <string name="are_you_sure_delete_word">Are you sure you want to delete the word?</string>
     <string name="streak">streak</string>
+    <string name="sign_in_title">Sign In</string>
+    <string name="sign_up_title">Sign Up</string>
 </resources>

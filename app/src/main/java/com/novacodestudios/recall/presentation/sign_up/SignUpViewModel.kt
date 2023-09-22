@@ -10,7 +10,6 @@ import com.novacodestudios.recall.domain.use_case.ValidateEmail
 import com.novacodestudios.recall.domain.use_case.ValidateName
 import com.novacodestudios.recall.domain.use_case.ValidatePassword
 import com.novacodestudios.recall.domain.use_case.ValidateRepeatedPassword
-import com.novacodestudios.recall.domain.use_case.ValidateSurname
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -20,7 +19,6 @@ import javax.inject.Inject
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
     private val validateName: ValidateName,
-    private val validateSurname: ValidateSurname,
     private val validateEmail: ValidateEmail,
     private val validatePassword: ValidatePassword,
     private val validateRepeatedPassword: ValidateRepeatedPassword,
@@ -36,20 +34,18 @@ class SignUpViewModel @Inject constructor(
     fun onEvent(event: SignUpEvent) {
         when (event) {
             is SignUpEvent.EmailChanged -> state = state.copy(email = event.email)
-            is SignUpEvent.NameChanged -> state = state.copy(name = event.name)
+            is SignUpEvent.FullNameChanged -> state = state.copy(fullName = event.fullName)
             is SignUpEvent.PasswordChanged -> state = state.copy(password = event.password)
             is SignUpEvent.RepeatedPasswordChanged -> state =
                 state.copy(repeatedPassword = event.repeatedPassword)
 
             is SignUpEvent.SignUp -> signUp()
-            is SignUpEvent.SurnameChanged -> state = state.copy(surname = event.surname)
         }
     }
 
     private fun signUp() {
         state=state.copy(isLoading = true)
-        val nameResult = validateName(state.name)
-        val surnameResult = validateSurname(state.surname)
+        val nameResult = validateName(state.fullName)
         val emailResult = validateEmail(state.email)
         val passwordResult = validatePassword(state.password)
         val repeatedPasswordResult =
@@ -57,7 +53,6 @@ class SignUpViewModel @Inject constructor(
 
         val hasError = listOf(
             nameResult,
-            surnameResult,
             emailResult,
             passwordResult,
             repeatedPasswordResult
@@ -66,8 +61,7 @@ class SignUpViewModel @Inject constructor(
         if (hasError) {
             state=state.copy(isLoading = false)
             state = state.copy(
-                nameError = nameResult.message,
-                surnameError = surnameResult.message,
+                fullNameError = nameResult.message,
                 emailError = emailResult.message,
                 passwordError = passwordResult.message,
                 repeatedPasswordError = repeatedPasswordResult.message
