@@ -28,3 +28,4 @@ jobs:
         run: ./gradlew assembleRelease appDistributionUploadRelease
         env:
           FIREBASE_TOKEN: ${{ secrets.TOKEN }}
+          APP_ID: ${{ secrets.APP_ID }}

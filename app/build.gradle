@@ -30,6 +30,7 @@ android {
     buildTypes {
         debug{
             firebaseAppDistribution {
+                artifactType="APK"
                 groups="Testers"
             }
         }
