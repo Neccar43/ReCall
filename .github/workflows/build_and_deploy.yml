@@ -28,11 +28,3 @@ jobs:
         run: ./gradlew assembleRelease appDistributionUploadRelease
         env:
           FIREBASE_TOKEN: ${{ secrets.TOKEN }}
-
-      - name: Upload Artifact to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
-        with:
-          appId: ${{ secrets.APP_ID }}
-          token:
-          file: app/build/outputs/apk/debug/ReCall-debug.apk
-          groups: Testers
