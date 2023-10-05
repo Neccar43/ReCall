@@ -2,8 +2,9 @@ name: Build and Deploy APK
 
 on:
   push:
-    branches:
-      - main
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
@@ -17,15 +18,21 @@ jobs:
         uses: actions/setup-java@v3.13.0
         with:
           java-version: '18'
-          distribution: 'adopt'
+          distribution: 'temurin'
+          cache: gradle
 
-      - name: Build debug
-        run: ./gradlew assembleDebug
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build and Deploy Debug
+        run: ./gradlew assembleRelease appDistributionUploadRelease
+        env:
+          FIREBASE_TOKEN: ${{ secrets.TOKEN }}
 
       - name: Upload Artifact to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
         with:
           appId: ${{ secrets.APP_ID }}
-          token: ${{ secrets.TOKEN }}
+          token:
           file: app/build/outputs/apk/debug/ReCall-debug.apk
           groups: Testers
