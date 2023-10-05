@@ -10,6 +10,7 @@ import com.novacodestudios.recall.domain.use_case.ValidateEmail
 import com.novacodestudios.recall.domain.use_case.ValidateName
 import com.novacodestudios.recall.domain.use_case.ValidatePassword
 import com.novacodestudios.recall.domain.use_case.ValidateRepeatedPassword
+import com.novacodestudios.recall.presentation.util.UIText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -75,13 +76,13 @@ class SignUpViewModel @Inject constructor(
                 _eventFlow.emit(UIEvent.SignUp)
             } catch (e: Exception) {
                 state=state.copy(isLoading = false)
-                _eventFlow.emit(UIEvent.ShowSnackbar(e.localizedMessage!!))
+                _eventFlow.emit(UIEvent.ShowSnackbar(UIText.DynamicText(e.localizedMessage!!)))
             }
         }
 
     }
     sealed class UIEvent{
-        data class ShowSnackbar(val message:String):UIEvent()
+        data class ShowSnackbar(val message:UIText):UIEvent()
         data object SignUp:UIEvent()
     }
 

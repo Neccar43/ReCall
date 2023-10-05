@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -236,7 +238,7 @@ fun StandardSearchBar(
         shape = RoundedCornerShape(cornerRadius),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         keyboardActions = KeyboardActions(onDone = { onSearch(text) }),
-        textStyle = TextStyle(fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+        textStyle = TextStyle(fontSize = MaterialTheme.typography.titleMedium.fontSize),
         trailingIcon = {
             Icon(
                 imageVector = Icons.Default.Close,
@@ -283,18 +285,19 @@ fun StandardDialog(
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                StandardText(text = title, modifier = Modifier.padding(top = 8.dp))
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 25.dp)) {
+                StandardText(text = title, modifier = Modifier.padding(vertical = 20.dp))
                 content()
                 Row(
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(end = 8.dp)
+                        .padding(vertical = 10.dp)
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text(text = dismissText)
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
                     TextButton(onClick = onRequest) {
                         Text(text = requestText)
                     }

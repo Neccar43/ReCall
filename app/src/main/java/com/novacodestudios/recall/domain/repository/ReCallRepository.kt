@@ -42,7 +42,7 @@ interface ReCallRepository {
 
     suspend fun saveUserToFirestore(fullName: String, email: String)
 
-    fun searchWords(search: String): Flow<List<Word>>
+    fun searchWords(search: String,groupId: Int?): Flow<List<Word>>
 
     fun getCompletedQuizzes(): Flow<List<Quiz>>
 
@@ -127,5 +127,19 @@ interface ReCallRepository {
     suspend fun setActiveGroupId(groupId: Int)
 
     fun getActiveGroupId(): Flow<Int?>
+
+    suspend fun sendResetEmail(email: String)
+
+    suspend fun deleteUserAccount()
+
+    suspend fun reAuthenticateUser(email: String,password: String)
+
+    suspend fun deleteAllGroups()
+
+    suspend fun deleteAllWordsInFirestore(uid: String)
+    suspend fun deleteAllQuizzesInFirestore(uid: String)
+    suspend fun deleteAllQuestionsInFirestore(uid: String)
+    suspend fun deleteAllGroupsInFirestore(uid: String)
+
 
 }

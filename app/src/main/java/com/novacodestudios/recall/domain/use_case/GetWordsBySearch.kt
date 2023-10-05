@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 class GetWordsBySearch @Inject constructor(private val repository: ReCallRepository) {
 
-    operator fun invoke(search: String): Flow<List<Word>> {
-        return repository.searchWords(search)
+    operator fun invoke(search: String,groupId: Int?): Flow<List<Word>> {
+        return repository.searchWords(search.trim(),groupId)
     }
 }

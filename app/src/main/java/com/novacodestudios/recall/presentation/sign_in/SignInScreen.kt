@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,9 +34,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.novacodestudios.recall.R
 import com.novacodestudios.recall.presentation.util.StandardButton
 import com.novacodestudios.recall.presentation.util.StandardCircularIndicator
+import com.novacodestudios.recall.presentation.util.StandardDialog
 import com.novacodestudios.recall.presentation.util.StandardLinkedText
 import com.novacodestudios.recall.presentation.util.StandardPasswordField
 import com.novacodestudios.recall.presentation.util.StandardTextField
+import com.novacodestudios.recall.presentation.util.UIText
 import com.novacodestudios.recall.util.isNotNull
 import kotlinx.coroutines.flow.collectLatest
 
@@ -47,10 +50,16 @@ fun SignInScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val context= LocalContext.current
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is SignInViewModel.UIEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
+                is SignInViewModel.UIEvent.ShowSnackbar -> {
+                    when (val text=event.message) {
+                        is UIText.DynamicText ->  snackbarHostState.showSnackbar(text.value)
+                        is UIText.StringResource -> snackbarHostState.showSnackbar(text.asString(context = context))
+                    }
+                }
                 is SignInViewModel.UIEvent.SignIn -> {
                     onNavigateToMainGraph()
                 }
@@ -117,7 +126,7 @@ fun SignInScreen(
                             text = state.email,
                             onValueChange = { viewModel.onEvent(SignInEvent.EmailChanged(it)) },
                             isError = state.emailError.isNotNull(),
-                            supportingText = state.emailError
+                            supportingText = state.emailError?.asString()
                         )
 
                         StandardPasswordField(
@@ -132,14 +141,14 @@ fun SignInScreen(
                             onValueChange = { viewModel.onEvent(SignInEvent.PasswordChanged(it)) },
                             text = state.password,
                             isError = state.passwordError.isNotNull(),
-                            supportingText = state.passwordError
+                            supportingText = state.passwordError?.asString()
                         )
                         StandardLinkedText(
                             modifier = Modifier
                                 .align(Alignment.Start)
                                 .padding(start = 16.dp, bottom = 8.dp),
                             text = stringResource(id = R.string.forget_password),
-                            onClick = { })
+                            onClick = { viewModel.onEvent(SignInEvent.ForgetPasswordDialogVisibilityChanged)})
 
                         StandardButton(
                             onClick = { viewModel.onEvent(SignInEvent.SignIn) },
@@ -162,6 +171,25 @@ fun SignInScreen(
 
                     }
                     StandardCircularIndicator(isLoading = state.isLoading)
+                    if (state.isDialogVisible){
+                        StandardDialog(
+                            title = stringResource(id = R.string.reset_password),
+                            onDismiss = { viewModel.onEvent(SignInEvent.ForgetPasswordDialogVisibilityChanged)},
+                            onRequest = { viewModel.onEvent(SignInEvent.SendPasswordResetEmail)}) {
+                            StandardTextField(
+                                text = state.forgetEmail,
+                                onValueChange = {
+                                    viewModel.onEvent(
+                                        SignInEvent.ForgetPassWordEmailChanged(it)
+                                    )
+                                },
+                                hint = stringResource(id = R.string.email),
+                                isError = state.forgetEmailError.isNotNull(),
+                                supportingText = state.forgetEmailError?.asString()
+                                )
+
+                        }
+                    }
                 }
 
 

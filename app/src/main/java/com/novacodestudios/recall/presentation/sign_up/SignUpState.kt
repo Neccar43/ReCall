@@ -1,13 +1,15 @@
 package com.novacodestudios.recall.presentation.sign_up
 
+import com.novacodestudios.recall.presentation.util.UIText
+
 data class SignUpState(
     val fullName: String = "",
-    val fullNameError: String? = null,
+    val fullNameError: UIText? = null,
     val email: String = "",
-    val emailError: String? = null,
+    val emailError: UIText? = null,
     val password: String = "",
-    val passwordError: String? = null,
+    val passwordError: UIText? = null,
     val repeatedPassword: String = "",
-    val repeatedPasswordError: String? = null,
+    val repeatedPasswordError: UIText? = null,
     val isLoading:Boolean=false
     )

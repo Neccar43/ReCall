@@ -39,16 +39,24 @@ fun QuestionScreen(
     onNavigateToResultScreen: (quizId: String) -> Unit,
     onNavigateToMainGraph: () -> Unit
 
-    ) {
+) {
 
-    LaunchedEffect(key1 = true){
-        viewModel.eventFlow.collectLatest {event->
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest { event ->
             when (event) {
-               is QuestionViewModel.UIEvent.FinishQuiz -> onNavigateToResultScreen(event.quizId.toString())
+                is QuestionViewModel.UIEvent.FinishQuiz -> onNavigateToResultScreen(event.quizId.toString())
             }
         }
     }
+    /*val primaryColor = MaterialTheme.colorScheme.primary
 
+
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .fillMaxHeight(fraction = 0.5f)
+        .clip(RoundedCornerShape(bottomStartPercent = 5, bottomEndPercent =5 ))
+        .background(primaryColor)
+    )*/
     val state = viewModel.state
     var isCancelClicked by remember {
         mutableStateOf(false)
@@ -79,7 +87,7 @@ fun QuestionScreen(
                 modifier = Modifier.padding(8.dp)
             ) {
                 OutlinedButton(
-                    onClick = {isCancelClicked=true }
+                    onClick = { isCancelClicked = true },
                 ) {
                     Text(text = stringResource(id = R.string.skip))
                 }
@@ -111,13 +119,13 @@ fun QuestionScreen(
         }
         StandardCircularIndicator(isLoading = state.isLoading)
 
-        if (isCancelClicked){
+        if (isCancelClicked) {
             StandardDialog(
-                title = "Quizden çık",
-                onDismiss = { isCancelClicked=false },
-                onRequest = {  onNavigateToMainGraph() }
+                title = stringResource(id = R.string.skip_quiz),
+                onDismiss = { isCancelClicked = false },
+                onRequest = { onNavigateToMainGraph() }
             ) {
-                StandardText(text = "Quizi terk etmek istediğinizden emin misiniz?")
+                StandardText(text = stringResource(id = R.string.are_you_sure_skip_quiz))
             }
         }
 

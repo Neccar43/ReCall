@@ -64,12 +64,13 @@ interface ReCallDao {
 
     @Query(
         """
-         SELECT * FROM Word 
-         WHERE LOWER(name) LIKE '%' || LOWER(:search) || '%' OR 
-         LOWER(meaning) LIKE '%' || LOWER(:search) || '%' 
-         """
+     SELECT * FROM Word 
+     WHERE (groupId IS NULL OR groupId=:groupId) AND (LOWER(name) LIKE  LOWER(:search) || '%' OR 
+     LOWER(meaning) LIKE  LOWER(:search) || '%') 
+     """
     )
-    fun searchWords(search: String): Flow<List<Word>>
+    fun searchWords(search: String, groupId: Int?): Flow<List<Word>>
+
 
     @Query("SELECT * FROM Question WHERE quizId=:quizId")
     fun getQuestionsByQuizId(quizId: Int): Flow<List<Question>>
@@ -119,6 +120,9 @@ interface ReCallDao {
 
      @Delete
      suspend fun deleteQuestion(question: Question)
+
+     @Query("DELETE  FROM `group`")
+     suspend fun deleteAllGroups()
 
 
 }

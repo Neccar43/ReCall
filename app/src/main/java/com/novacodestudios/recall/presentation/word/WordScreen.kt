@@ -65,6 +65,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -79,6 +80,7 @@ import com.novacodestudios.recall.presentation.util.StandardCircularIndicator
 import com.novacodestudios.recall.presentation.util.StandardDialog
 import com.novacodestudios.recall.presentation.util.StandardSearchBar
 import com.novacodestudios.recall.presentation.util.StandardTextField
+import com.novacodestudios.recall.presentation.util.UIText
 import com.novacodestudios.recall.util.isNotNull
 import kotlinx.coroutines.flow.collectLatest
 import java.util.Locale
@@ -88,9 +90,14 @@ import java.util.Locale
 @Composable
 fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
     LaunchedEffect(true) {
-        viewModel.eventFlow.collectLatest { event ->
-            snackbarHostState.showSnackbar(event.message)
+        viewModel.eventFlow.collectLatest { text ->
+            when (text) {
+                is UIText.DynamicText -> snackbarHostState.showSnackbar(text.value)
+                is UIText.StringResource -> snackbarHostState.showSnackbar(text.asString(context = context))
+            }
+
         }
     }
     val state = viewModel.state
@@ -140,7 +147,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                         }
                                     })
                                 Text(
-                                    text = "${state.selectedWords.size} seçildi",
+                                    text = "${state.selectedWords.size} " + stringResource(id = R.string.selected),
                                     modifier = Modifier.align(Alignment.CenterVertically)
                                 )
                             }
@@ -161,7 +168,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                     StandardSearchBar(
                                         hint = stringResource(id = R.string.search_word),
                                         modifier = Modifier
-                                            .height(56.dp)
+                                            .height(if (active) 63.dp else 56.dp)
                                             .width(width),
                                         onSearch = { viewModel.onEvent(WordEvent.OnSearchChanged(it)) },
                                         text = state.search,
@@ -186,12 +193,12 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                         }) {
                                         Text(
                                             text = state.selectedGroup?.groupName
-                                                ?: "Tüm kelimeler",
+                                                ?: stringResource(id = R.string.all_words),
                                             fontSize = MaterialTheme.typography.titleLarge.fontSize,
                                         )
                                         Icon(
                                             imageVector = Icons.Default.ExpandMore,
-                                            contentDescription = "Select group"
+                                            contentDescription = stringResource(id = R.string.select_group)
                                         )
                                     }
 
@@ -222,7 +229,10 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                                             verticalAlignment = Alignment.CenterVertically,
                                                             modifier = Modifier.fillMaxWidth()
                                                         ) {
-                                                            Text(text = group.groupName)
+                                                            Text(
+                                                                text = group.groupName,
+                                                                fontSize = MaterialTheme.typography.titleMedium.fontSize
+                                                            )
                                                             IconButton(
                                                                 onClick = {
                                                                     isGroupEditMenuExpanded =
@@ -231,7 +241,9 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                                             ) {
                                                                 Icon(
                                                                     imageVector = Icons.Default.MoreVert,
-                                                                    contentDescription = "update and delete group",// TODO: string xml e kaydet
+                                                                    contentDescription = stringResource(
+                                                                        id = R.string.update_delete_group
+                                                                    )
                                                                 )
                                                             }
                                                         }
@@ -252,22 +264,32 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                                             DropdownMenuItem(
                                                                 onClick = {
                                                                     viewModel.onEvent(WordEvent.OnUpdatedGroupDialogVisibilityChanged)
-                                                                    viewModel.onEvent(WordEvent.OnEditedGroupChanged(group))
-                                                                    isGroupEditMenuExpanded=false
-                                                                    isGroupMenuExpanded= false
+                                                                    viewModel.onEvent(
+                                                                        WordEvent.OnEditedGroupChanged(
+                                                                            group
+                                                                        )
+                                                                    )
+                                                                    isGroupEditMenuExpanded = false
+                                                                    isGroupMenuExpanded = false
                                                                 }
                                                             ) {
-                                                                Text(text = "Gurubu düzenle")
+                                                                Text(text = stringResource(id = R.string.edit_group),
+                                                                    fontSize = MaterialTheme.typography.titleMedium.fontSize)
                                                             }
                                                             DropdownMenuItem(
                                                                 onClick = {
                                                                     viewModel.onEvent(WordEvent.OnDeleteGroupDialogVisibilityChanged)
-                                                                    viewModel.onEvent(WordEvent.OnEditedGroupChanged(group))
-                                                                    isGroupEditMenuExpanded=false
-                                                                    isGroupMenuExpanded= false
+                                                                    viewModel.onEvent(
+                                                                        WordEvent.OnEditedGroupChanged(
+                                                                            group
+                                                                        )
+                                                                    )
+                                                                    isGroupEditMenuExpanded = false
+                                                                    isGroupMenuExpanded = false
                                                                 }
                                                             ) {
-                                                                Text(text = "Gurubu sil")
+                                                                Text(text = stringResource(id = R.string.delete_group),
+                                                                    fontSize = MaterialTheme.typography.titleMedium.fontSize)
                                                             }
                                                         }
                                                     }
@@ -283,12 +305,15 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                                     isGroupMenuExpanded = false
                                                 }
                                             ) {
-                                                Text(text = "Tüm kelimeler")
+                                                Text(
+                                                    text = stringResource(id = R.string.all_words),
+                                                    fontSize = MaterialTheme.typography.titleMedium.fontSize
+                                                )
                                             }
                                         } else
                                             DropdownMenuItem(onClick = { }) {
                                                 Text(
-                                                    text = "Oluşturduğunuz gurup yok.",
+                                                    text = stringResource(id = R.string.no_group),
                                                     fontSize = MaterialTheme.typography.titleMedium.fontSize
                                                 )
 
@@ -325,7 +350,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Sort,
-                                        contentDescription = "Sort",
+                                        contentDescription = stringResource(id = R.string.sort_words),
                                     )
                                 }
                                 IconButton(
@@ -338,7 +363,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                 }
                             }
                         } else {
-                            if (state.selectedWords.isNotEmpty()){
+                            if (state.selectedWords.isNotEmpty()) {
                                 Row {
                                     IconButton(
                                         onClick = { viewModel.onEvent(WordEvent.OnBulkDeleteDialogVisibilityChanged) },
@@ -395,7 +420,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                         onValueChange = { viewModel.onEvent(WordEvent.OnWordChanged(it)) },
                         text = state.word,
                         isError = state.wordError.isNotNull(),
-                        supportingText = state.wordError
+                        supportingText = state.wordError?.asString()
                     )
                     StandardTextField(
                         hint = stringResource(id = R.string.meaning),
@@ -403,7 +428,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                         onValueChange = { viewModel.onEvent(WordEvent.OnMeaningChanged(it)) },
                         text = state.meaning,
                         isError = state.meaningError.isNotNull(),
-                        supportingText = state.meaningError
+                        supportingText = state.meaningError?.asString()
                     )
                 }
             }
@@ -436,7 +461,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                         onValueChange = { viewModel.onEvent(WordEvent.OnWordChanged(it)) },
                         text = state.word,
                         isError = state.wordError.isNotNull(),
-                        supportingText = state.wordError
+                        supportingText = state.wordError?.asString()
                     )
                     StandardTextField(
                         hint = stringResource(id = R.string.meaning),
@@ -444,7 +469,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                         onValueChange = { viewModel.onEvent(WordEvent.OnMeaningChanged(it)) },
                         text = state.meaning,
                         isError = state.meaningError.isNotNull(),
-                        supportingText = state.meaningError
+                        supportingText = state.meaningError?.asString()
                     )
                 }
             }
@@ -458,7 +483,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                     sheetState = sheetState,
                 ) {
                     SheetRow(
-                        text = "Eklenme tarihine göre artan",
+                        text = stringResource(id = R.string.order_by_creation_date_ascending),
                         onClick = {
                             viewModel.onEvent(
                                 WordEvent.OnOrderChanged(
@@ -472,7 +497,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                     )
 
                     SheetRow(
-                        text = "Eklenme tarihine göre azalan",
+                        text = stringResource(id = R.string.order_by_creation_date_descending),
                         onClick = {
                             viewModel.onEvent(
                                 WordEvent.OnOrderChanged(
@@ -486,7 +511,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                     )
 
                     SheetRow(
-                        text = "Alfabetik artan",
+                        text = stringResource(id = R.string.order_alphabetically_ascending),
                         onClick = {
                             viewModel.onEvent(
                                 WordEvent.OnOrderChanged(
@@ -500,7 +525,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                     )
 
                     SheetRow(
-                        text = "Alfabetik azalan",
+                        text = stringResource(id = R.string.order_alphabetically_descending),
                         onClick = {
                             viewModel.onEvent(
                                 WordEvent.OnOrderChanged(
@@ -520,16 +545,16 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
 
             if (state.isGroupDialogVisible) {
                 StandardDialog(
-                    title = "Yeni gurup ekle",
+                    title = stringResource(id = R.string.add_group),
                     onDismiss = { viewModel.onEvent(WordEvent.OnGroupDialogVisibilityChanged) },
                     onRequest = { viewModel.onEvent(WordEvent.OnGroupAdded) }) {
                     StandardTextField(
-                        hint = "Gurup adı",
+                        hint = stringResource(id = R.string.group_name),
                         modifier = Modifier,
                         onValueChange = { viewModel.onEvent(WordEvent.OnGroupNameChanged(it)) },
                         text = state.groupName,
                         isError = state.groupNameError.isNotNull(),
-                        supportingText = state.groupNameError
+                        supportingText = state.groupNameError?.asString()
                     )
 
                 }
@@ -537,7 +562,7 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
 
             if (state.isBulkDeleteDialogVisible) {
                 StandardDialog(
-                    title = "Kelimeleri sil",
+                    title = stringResource(id = R.string.bulk_delete),
                     onDismiss = {
                         viewModel.onEvent(
                             WordEvent.OnBulkDeleteDialogVisibilityChanged
@@ -545,13 +570,13 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                     },
                     onRequest = { viewModel.onEvent(WordEvent.OnBulkDelete) }
                 ) {
-                    Text(text = "Bu kelimeleri kalıcı olarak silmek istediğinizden emin misiniz?")
+                    Text(text = stringResource(id = R.string.are_you_sure_delete_words))
                 }
             }
 
             if (state.isWordsMoveDialogVisible) {
                 StandardDialog(
-                    title = "Kelimeleri guruba taşı",
+                    title = stringResource(id = R.string.move_group_selected_words),
                     onDismiss = { viewModel.onEvent(WordEvent.OnWordsMoveDialogVisibilityChanged) },
                     onRequest = { viewModel.onEvent(WordEvent.OnWordsMove) }
                 ) {
@@ -562,7 +587,8 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                         expanded = isExpanded,
                         onExpandedChange = { isExpanded = it }) {
                         StandardTextField(
-                            text = viewModel.state.groupToMove?.groupName ?: "Gurup seçin",
+                            text = viewModel.state.groupToMove?.groupName
+                                ?: stringResource(id = R.string.select_group),
                             onValueChange = {},
                             readOnly = true,
                             iconEnd = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
@@ -600,37 +626,37 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                 }
             }
 
-            if (state.isUpdateGroupDialogVisible){
+            if (state.isUpdateGroupDialogVisible) {
                 StandardDialog(
-                    title = "Gurup adını değiştir",
+                    title = stringResource(id = R.string.edit_group),
                     onDismiss = { viewModel.onEvent(WordEvent.OnUpdatedGroupDialogVisibilityChanged) },
                     onRequest = { viewModel.onEvent(WordEvent.OnGroupUpdated) }) {
                     StandardTextField(
-                        text =state.newGroupName,
-                        onValueChange ={viewModel.onEvent(WordEvent.OnNewGroupNameChanged(it))},
-                        hint = "Yeni gurup adı",
+                        text = state.newGroupName,
+                        onValueChange = { viewModel.onEvent(WordEvent.OnNewGroupNameChanged(it)) },
+                        hint = stringResource(id = R.string.new_group_name),
                         isError = state.newGroupNameError.isNotNull(),
-                        supportingText = state.newGroupNameError
+                        supportingText = state.newGroupNameError?.asString()
                     )
 
                 }
             }
 
-            if (state.isDeleteGroupDialogVisible){
+            if (state.isDeleteGroupDialogVisible) {
                 StandardDialog(
-                    title = "Gurubu sil",
-                    onDismiss = { viewModel.onEvent(WordEvent.OnDeleteGroupDialogVisibilityChanged)},
+                    title = stringResource(id = R.string.delete_group),
+                    onDismiss = { viewModel.onEvent(WordEvent.OnDeleteGroupDialogVisibilityChanged) },
                     onRequest = {
                         viewModel.onEvent(WordEvent.OnGroupDeleted)
 
                     }
                 ) {
-                    Text(text = "Gurubu silmek istediğinize emin misiniz?")
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = stringResource(id = R.string.are_you_sure_delete_group))
+                    Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = state.isDeleteAllWordsInGroupSelected,
-                            onCheckedChange ={viewModel.onEvent(WordEvent.OnDeleteAllWordsCheckChanged)} )
-                        Text(text = "İçindeki tüm kelimeleri sil")
+                            onCheckedChange = { viewModel.onEvent(WordEvent.OnDeleteAllWordsCheckChanged) })
+                        Text(text = stringResource(id = R.string.delete_all_words_in_group))
                     }
 
                 }
@@ -661,7 +687,7 @@ fun WordList(words: List<Word>, viewModel: WordViewModel) {
         item {
             Divider()
         }
-        items(items = words, key = {it.id}) {
+        items(items = words, key = { it.id }) {
             WordItem(word = it, viewModel = viewModel)
             Divider()
         }
@@ -737,7 +763,7 @@ fun WordItem(
                     text = word.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() },
                     fontWeight = FontWeight.Bold
                 )
-                if (viewModel.state.isMeaningVisible|| isMeaningShowing){
+                if (viewModel.state.isMeaningVisible || isMeaningShowing) {
                     Text(text = word.meaning.replaceFirstChar {
                         if (it.isLowerCase()) it.titlecase(
                             Locale.ROOT

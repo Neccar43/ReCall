@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,6 +38,7 @@ import com.novacodestudios.recall.presentation.util.StandardCircularIndicator
 import com.novacodestudios.recall.presentation.util.StandardLinkedText
 import com.novacodestudios.recall.presentation.util.StandardPasswordField
 import com.novacodestudios.recall.presentation.util.StandardTextField
+import com.novacodestudios.recall.presentation.util.UIText
 import com.novacodestudios.recall.util.isNotNull
 import kotlinx.coroutines.flow.collectLatest
 
@@ -50,10 +52,16 @@ fun SignUpScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val state = viewModel.state
 
+    val context= LocalContext.current
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is SignUpViewModel.UIEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
+                is SignUpViewModel.UIEvent.ShowSnackbar -> {
+                    when (val text=event.message) {
+                        is UIText.DynamicText ->  snackbarHostState.showSnackbar(text.value)
+                        is UIText.StringResource -> snackbarHostState.showSnackbar(text.asString(context = context))
+                    }
+                }
                 is SignUpViewModel.UIEvent.SignUp -> {
                     onNavigateToHomeGraph()
                 }
@@ -113,7 +121,7 @@ fun SignUpScreen(
                                     contentDescription = stringResource(id = R.string.name)
                                 )
                             },
-                            supportingText = state.fullNameError,
+                            supportingText = state.fullNameError?.asString(),
                             isError = state.fullNameError.isNotNull(),
                             text = state.fullName,
                             onValueChange = { viewModel.onEvent(SignUpEvent.FullNameChanged(it)) }
@@ -129,7 +137,7 @@ fun SignUpScreen(
                                 )
                             },
                             keyboardType = KeyboardType.Email,
-                            supportingText = state.emailError,
+                            supportingText = state.emailError?.asString(),
                             isError = state.emailError.isNotNull(),
                             text = state.email,
                             onValueChange = { viewModel.onEvent(SignUpEvent.EmailChanged(it)) }
@@ -144,7 +152,7 @@ fun SignUpScreen(
                                     contentDescription = stringResource(id = R.string.password)
                                 )
                             },
-                            supportingText = state.passwordError,
+                            supportingText = state.passwordError?.asString(),
                             isError = state.passwordError.isNotNull(),
                             text = state.password,
                             onValueChange = { viewModel.onEvent(SignUpEvent.PasswordChanged(it)) }
@@ -158,7 +166,7 @@ fun SignUpScreen(
                                     contentDescription = stringResource(id = R.string.repeat_password)
                                 )
                             },
-                            supportingText = state.repeatedPasswordError,
+                            supportingText = state.repeatedPasswordError?.asString(),
                             isError = state.repeatedPasswordError.isNotNull(),
                             text = state.repeatedPassword,
                             onValueChange = {

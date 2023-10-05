@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.novacodestudios.recall.R
 import com.novacodestudios.recall.domain.model.User
+import com.novacodestudios.recall.presentation.util.UIText
 import com.novacodestudios.recall.util.Resource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
@@ -40,13 +41,13 @@ class GoogleAuthUiClient @Inject constructor(
             if (user != null) {
                 Resource.Success(User(id = user.uid, name = user.displayName, email = user.email!!))
             }else{
-                Resource.Error(message = "user is null.")
+                Resource.Error(message = UIText.DynamicText("user is null."))
             }
 
         } catch (e: Exception) {
             e.printStackTrace()
             if (e is CancellationException) throw e
-            Resource.Error(message = e.localizedMessage!!)
+            Resource.Error(message =UIText.DynamicText(e.localizedMessage!!) )
         }
     }
 

@@ -34,11 +34,11 @@ class QuizHistoryViewModel @Inject constructor(
         val quizDetails= mutableListOf<QuizDetail>()
 
         completedQuizzesJob = getCompletedQuizzes().onEach { completedQuizzes ->
-            println(completedQuizzes)
             completedQuizzes.forEach {quiz->
-                getQuizWithQuestionsById(quiz.id).map {it.toQuizDetail() }.onEach {
-                    println("detail$it")
-                    quizDetails.add(it)
+                getQuizWithQuestionsById(quiz.id).map {it?.toQuizDetail() }.onEach {
+                    if (it != null) {
+                        quizDetails.add(it)
+                    }
                     state=state.copy(pastQuizzes = quizDetails)
                 }.launchIn(viewModelScope)
             }

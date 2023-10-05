@@ -5,6 +5,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -29,6 +30,7 @@ import com.novacodestudios.recall.domain.model.toQuiz
 import com.novacodestudios.recall.domain.model.toWord
 import com.novacodestudios.recall.domain.repository.ReCallRepository
 import com.novacodestudios.recall.domain.worker.SyncDataWorker
+import com.novacodestudios.recall.presentation.util.UIText
 import com.novacodestudios.recall.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
@@ -43,10 +45,10 @@ class ReCallRepositoryImpl @Inject constructor(
     private val datastore: ThemeDatastore,
     private val workManager: WorkManager,
     private val api: TranslationApi,
-    private val  meaningVisibilityDataStore: MeaningVisibilityDataStore,
-    private val  groupDataStore: GroupDataStore,
+    private val meaningVisibilityDataStore: MeaningVisibilityDataStore,
+    private val groupDataStore: GroupDataStore,
 
-) : ReCallRepository {
+    ) : ReCallRepository {
     override fun getWordsFromRoom(): Flow<List<Word>> {
         return dao.getAllWordsFromRoom()
     }
@@ -108,8 +110,8 @@ class ReCallRepositoryImpl @Inject constructor(
         firestore
     }
 
-    override fun searchWords(search: String): Flow<List<Word>> {
-        return dao.searchWords(search)
+    override fun searchWords(search: String, groupId: Int?): Flow<List<Word>> {
+        return dao.searchWords(search, groupId)
     }
 
     override fun getCompletedQuizzes(): Flow<List<Quiz>> {
@@ -188,7 +190,7 @@ class ReCallRepositoryImpl @Inject constructor(
 
     override suspend fun setQuestionToFirestore(uid: String, question: Question) {
         try {
-            firestoreQuestionRef(uid,question)
+            firestoreQuestionRef(uid, question)
                 .set(question.toMap()).await()
         } catch (e: Exception) {
             throw e
@@ -321,15 +323,16 @@ class ReCallRepositoryImpl @Inject constructor(
             val response = api.translateText(word)
             if (response.isSuccessful) {
                 val translationDto =
-                    response.body() ?: return Resource.Error(message = "TranslationDto is null.")
+                    response.body()
+                        ?: return Resource.Error(message = UIText.DynamicText("TranslationDto is null."))
                 return Resource.Success(translationDto.toTranslation(word))
             } else {
                 val errorMessage = response.errorBody()?.string() ?: "Unknown error."
-                return Resource.Error(message = errorMessage)
+                return Resource.Error(message = UIText.DynamicText(errorMessage))
             }
         } catch (e: Exception) {
             val errorMessage = e.message ?: "Unknown error."
-            return Resource.Error(message = errorMessage)
+            return Resource.Error(message = UIText.DynamicText(errorMessage))
         }
 
     }
@@ -373,16 +376,16 @@ class ReCallRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getGroupsFromFirestore( uid: String): List<Group> {
+    override suspend fun getGroupsFromFirestore(uid: String): List<Group> {
         try {
             val querySnapshot = firestore.collection(FirestoreCollections.GROUPS)
                 .document(uid)
                 .collection(FirestoreCollections.GROUPS)
                 .get().await()
 
-            val groups= mutableListOf<Group>()
+            val groups = mutableListOf<Group>()
 
-            querySnapshot.forEach{
+            querySnapshot.forEach {
                 groups.add(it.toGroup())
             }
             return groups
@@ -390,7 +393,6 @@ class ReCallRepositoryImpl @Inject constructor(
             throw e
         }
     }
-
 
 
     override suspend fun deleteQuestionFromFirestore(uid: String, question: Question) {
@@ -418,8 +420,8 @@ class ReCallRepositoryImpl @Inject constructor(
             .document(groupId)
     }
 
-    private fun firestoreQuestionRef(uid: String,question: Question):DocumentReference{
-        return  firestore
+    private fun firestoreQuestionRef(uid: String, question: Question): DocumentReference {
+        return firestore
             .collection(FirestoreCollections.QUESTIONS)
             .document(uid)
             .collection(FirestoreCollections.QUESTIONS)
@@ -429,7 +431,7 @@ class ReCallRepositoryImpl @Inject constructor(
     }
 
     override fun getMeaningVisibility(): Flow<Boolean?> {
-       return meaningVisibilityDataStore.getMeaningVisibility()
+        return meaningVisibilityDataStore.getMeaningVisibility()
     }
 
     override suspend fun setActiveGroupId(groupId: Int) {
@@ -444,4 +446,66 @@ class ReCallRepositoryImpl @Inject constructor(
         meaningVisibilityDataStore.setMeaningVisibility(meaningVisibility)
     }
 
+    override suspend fun sendResetEmail(email: String) {
+        try {
+            auth.sendPasswordResetEmail(email).await()
+        } catch (e: Exception) {
+            throw e
+        }
+
+    }
+
+    override suspend fun deleteUserAccount() {
+        auth.currentUser!!.delete().await()
+    }
+
+    override suspend fun reAuthenticateUser(email: String, password: String) {
+        val credential = EmailAuthProvider.getCredential(email, password)
+        auth.currentUser!!.reauthenticate(credential).await()
+    }
+
+    override suspend fun deleteAllGroups() {
+        dao.deleteAllGroups()
+    }
+
+    override suspend fun deleteAllWordsInFirestore(uid: String) {
+        try {
+            firestore
+                .collection(FirestoreCollections.WORDS)
+                .document(uid).delete().await()
+        } catch (e: Exception) {
+            throw e
+        }
+
+    }
+
+    override suspend fun deleteAllQuizzesInFirestore(uid: String) {
+        try {
+            firestore
+                .collection(FirestoreCollections.QUIZZES)
+                .document(uid).delete().await()
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    override suspend fun deleteAllQuestionsInFirestore(uid: String) {
+        try {
+            firestore
+                .collection(FirestoreCollections.QUESTIONS)
+                .document(uid).delete().await()
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    override suspend fun deleteAllGroupsInFirestore(uid: String) {
+        try {
+            firestore
+                .collection(FirestoreCollections.GROUPS)
+                .document(uid).delete().await()
+        } catch (e: Exception) {
+            throw e
+        }
+    }
 }

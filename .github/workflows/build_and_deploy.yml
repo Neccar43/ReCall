@@ -1,0 +1,31 @@
+name: Build and Deploy APK
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3.13.0
+        with:
+          java-version: '18'
+          distribution: 'adopt'
+
+      - name: Build debug
+        run: ./gradlew assembleDebug
+
+      - name: Upload Artifact to firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
+        with:
+        appId: ${{secrets.APP_ID}}
+        token: ${{secrets.TOKEN}}
+        file: app/build/outputs/apk/debug/ReCall-debug.apk
+        groups: Testers

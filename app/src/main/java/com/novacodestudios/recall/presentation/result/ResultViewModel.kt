@@ -22,8 +22,8 @@ class ResultViewModel@Inject constructor(
         savedStateHandle.get<Int>(QUIZ_ID)?.let {quizId->
             getQuizWithQuestionsById(quizId).onEach {quizWithQuestions ->
                 state=state.copy(
-                    quiz = quizWithQuestions.quiz,
-                    questions = quizWithQuestions.questions
+                    quizWithQuestions=quizWithQuestions,
+                    quizDetail = quizWithQuestions.toQuizDetail()
                 )
             }.launchIn(viewModelScope)
         }

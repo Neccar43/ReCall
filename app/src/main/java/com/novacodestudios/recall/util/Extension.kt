@@ -49,12 +49,13 @@ fun currentISOLocaleDateTimeString(): String {
     return currentDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 }
 
-fun formatTime(milliSec:Long):String{
+fun formatTime(milliSec:Long,context: Context):String{
     val second=milliSec/1000
     val minute=second/60
     val remainSecond=second%60
-    return when{
-        minute>0 && remainSecond>0->"$minute dk $remainSecond sn"
-        else-> "$remainSecond sn"
+    return if (minute > 0 && remainSecond > 0) {
+        context.getString(R.string.formatted_time_minutes_seconds, minute, remainSecond)
+    } else {
+        context.getString(R.string.formatted_time_seconds, remainSecond)
     }
 }

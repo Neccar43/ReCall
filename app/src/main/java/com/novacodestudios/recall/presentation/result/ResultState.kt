@@ -1,13 +1,12 @@
 package com.novacodestudios.recall.presentation.result
 
-import com.novacodestudios.recall.domain.model.Question
-import com.novacodestudios.recall.domain.model.Quiz
+import com.novacodestudios.recall.domain.model.QuizDetail
+import com.novacodestudios.recall.domain.model.relation.QuizWithQuestions
 
 data class ResultState(
-    val quiz: Quiz?=null,
-    val questions: List<Question> = emptyList(),
+    val quizDetail:QuizDetail?=null,
+    val quizWithQuestions: QuizWithQuestions?=null
 
-){
-    val wrongAnswerCount by lazy { questions.count { it.userAnswer!=it.correctAnswer } }
-    val correctAnswerCount by lazy {questions.count { it.userAnswer==it.correctAnswer }  }
-}
+
+
+)
