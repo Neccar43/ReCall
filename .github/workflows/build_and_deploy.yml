@@ -3,7 +3,7 @@ name: Build and Deploy APK
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -22,10 +22,10 @@ jobs:
       - name: Build debug
         run: ./gradlew assembleDebug
 
-      - name: Upload Artifact to firebase App Distribution
+      - name: Upload Artifact to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
         with:
-        appId: ${{secrets.APP_ID}}
-        token: ${{secrets.TOKEN}}
-        file: app/build/outputs/apk/debug/ReCall-debug.apk
-        groups: Testers
+          appId: ${{ secrets.APP_ID }}
+          token: ${{ secrets.TOKEN }}
+          file: app/build/outputs/apk/debug/ReCall-debug.apk
+          groups: Testers
