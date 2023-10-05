@@ -1,5 +1,6 @@
 package com.novacodestudios.recall.data.repository
 
+import com.novacodestudios.recall.domain.model.Group
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.domain.model.Quiz
 import com.novacodestudios.recall.domain.model.Translation
@@ -79,7 +80,7 @@ class FakeReCallRepository : ReCallRepository {
         TODO("Not yet implemented")
     }
 
-    override fun searchWords(search: String): Flow<List<Word>> {
+    override fun searchWords(search: String, groupId: Int?): Flow<List<Word>> {
         TODO("Not yet implemented")
     }
 
@@ -188,6 +189,98 @@ class FakeReCallRepository : ReCallRepository {
     }
 
     override suspend fun translateWord(word: String): Resource<Translation> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getWordsFromRoomByGroupId(groupId: Int?): Flow<List<Word>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getGroupsFromRoom(): Flow<List<Group>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateGroupFromRoom(group: Group) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun insertGroupFromRoom(group: Group) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteGroupFromRoom(group: Group) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setGroupFromFirestore(group: Group, uid: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteGroupFromFirestore(group: Group, uid: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getGroupsFromFirestore(uid: String): List<Group> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteQuestionFromFirestore(uid: String, question: Question) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getQuestionFromActiveQuizzesByWordId(wordId: Int): Flow<List<Question>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteQuestionFromRoom(question: Question) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setMeaningVisibility(meaningVisibility: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getMeaningVisibility(): Flow<Boolean?> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setActiveGroupId(groupId: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getActiveGroupId(): Flow<Int?> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun sendResetEmail(email: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteUserAccount() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun reAuthenticateUser(email: String, password: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteAllGroups() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteAllWordsInFirestore(uid: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteAllQuizzesInFirestore(uid: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteAllQuestionsInFirestore(uid: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteAllGroupsInFirestore(uid: String) {
         TODO("Not yet implemented")
     }
 }
