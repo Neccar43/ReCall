@@ -32,7 +32,7 @@ android {
             firebaseAppDistribution {
                // artifactType="APK"
                 groups="Testers"
-               // appId= "1:176751805279:android:75082a08f50b4b28a62cea"
+                appId= project.findProperty("APP_ID")
             }
         }
         release {
