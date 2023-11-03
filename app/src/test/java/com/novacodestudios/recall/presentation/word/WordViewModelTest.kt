@@ -16,6 +16,7 @@ class WordViewModelTest {
     }
 
     @Test
-    fun onEvent() {
+    fun onEvent(): Unit {
+
     }
 }

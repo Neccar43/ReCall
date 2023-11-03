@@ -76,6 +76,7 @@ import com.novacodestudios.recall.R
 import com.novacodestudios.recall.domain.model.Word
 import com.novacodestudios.recall.domain.util.OrderType
 import com.novacodestudios.recall.domain.util.WordOrder
+import com.novacodestudios.recall.presentation.util.EmptyStateMessage
 import com.novacodestudios.recall.presentation.util.StandardCircularIndicator
 import com.novacodestudios.recall.presentation.util.StandardDialog
 import com.novacodestudios.recall.presentation.util.StandardSearchBar
@@ -273,8 +274,10 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                                                     isGroupMenuExpanded = false
                                                                 }
                                                             ) {
-                                                                Text(text = stringResource(id = R.string.edit_group),
-                                                                    fontSize = MaterialTheme.typography.titleMedium.fontSize)
+                                                                Text(
+                                                                    text = stringResource(id = R.string.edit_group),
+                                                                    fontSize = MaterialTheme.typography.titleMedium.fontSize
+                                                                )
                                                             }
                                                             DropdownMenuItem(
                                                                 onClick = {
@@ -288,8 +291,10 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
                                                                     isGroupMenuExpanded = false
                                                                 }
                                                             ) {
-                                                                Text(text = stringResource(id = R.string.delete_group),
-                                                                    fontSize = MaterialTheme.typography.titleMedium.fontSize)
+                                                                Text(
+                                                                    text = stringResource(id = R.string.delete_group),
+                                                                    fontSize = MaterialTheme.typography.titleMedium.fontSize
+                                                                )
                                                             }
                                                         }
                                                     }
@@ -400,272 +405,291 @@ fun WordScreen(viewModel: WordViewModel = hiltViewModel()) {
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { paddingValue ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValue),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            WordList(words = state.wordList, viewModel)
-            if (state.isAddDialogVisible) {
-                StandardDialog(
-                    title = stringResource(id = R.string.add_word),
-                    onDismiss = { viewModel.onEvent(WordEvent.OnAddDialogVisibilityChange(false)) },
-                    onRequest = { viewModel.onEvent(WordEvent.SaveWord) }
-                ) {
-                    val dialogModifier = Modifier.padding(horizontal = 8.dp)
-                    StandardTextField(
-                        hint = stringResource(id = R.string.word),
-                        modifier = dialogModifier,
-                        onValueChange = { viewModel.onEvent(WordEvent.OnWordChanged(it)) },
-                        text = state.word,
-                        isError = state.wordError.isNotNull(),
-                        supportingText = state.wordError?.asString()
-                    )
-                    StandardTextField(
-                        hint = stringResource(id = R.string.meaning),
-                        modifier = dialogModifier,
-                        onValueChange = { viewModel.onEvent(WordEvent.OnMeaningChanged(it)) },
-                        text = state.meaning,
-                        isError = state.meaningError.isNotNull(),
-                        supportingText = state.meaningError?.asString()
-                    )
-                }
-            }
-            if (state.isDeleteDialogVisible) {
-                StandardDialog(
-                    title = stringResource(id = R.string.delete_word),
-                    onDismiss = {
-                        viewModel.onEvent(
-                            WordEvent.OnDeleteDialogVisibilityChange(
-                                false,
-                                null
-                            )
-                        )
-                    },
-                    onRequest = { viewModel.onEvent(WordEvent.DeleteWord) }
-                ) {
-                    Text(text = stringResource(id = R.string.are_you_sure_delete_word))
-                }
-            }
-            if (state.isUpdateDialogVisible) {
-                StandardDialog(
-                    title = stringResource(id = R.string.update_word),
-                    onDismiss = { viewModel.onEvent(WordEvent.OnUpdateDialogVisibilityChange(false)) },
-                    onRequest = { viewModel.onEvent(WordEvent.UpdateWord) }
-                ) {
-                    val dialogModifier = Modifier.padding(horizontal = 8.dp)
-                    StandardTextField(
-                        hint = stringResource(id = R.string.word),
-                        modifier = dialogModifier,
-                        onValueChange = { viewModel.onEvent(WordEvent.OnWordChanged(it)) },
-                        text = state.word,
-                        isError = state.wordError.isNotNull(),
-                        supportingText = state.wordError?.asString()
-                    )
-                    StandardTextField(
-                        hint = stringResource(id = R.string.meaning),
-                        modifier = dialogModifier,
-                        onValueChange = { viewModel.onEvent(WordEvent.OnMeaningChanged(it)) },
-                        text = state.meaning,
-                        isError = state.meaningError.isNotNull(),
-                        supportingText = state.meaningError?.asString()
-                    )
-                }
-            }
-            StandardCircularIndicator(isLoading = state.isLoading)
-
-            val sheetState = rememberModalBottomSheetState()
-
-            if (state.isSheetOpen) {
-                ModalBottomSheet(
-                    onDismissRequest = { viewModel.onEvent(WordEvent.OnSheetVisibilityChange) },
-                    sheetState = sheetState,
-                ) {
-                    SheetRow(
-                        text = stringResource(id = R.string.order_by_creation_date_ascending),
-                        onClick = {
-                            viewModel.onEvent(
-                                WordEvent.OnOrderChanged(
-                                    WordOrder.CreationDate(
-                                        OrderType.Ascending
-                                    )
-                                )
-                            )
-                        },
-                        isSelected = state.wordOrder is WordOrder.CreationDate && state.wordOrder.orderType == OrderType.Ascending
-                    )
-
-                    SheetRow(
-                        text = stringResource(id = R.string.order_by_creation_date_descending),
-                        onClick = {
-                            viewModel.onEvent(
-                                WordEvent.OnOrderChanged(
-                                    WordOrder.CreationDate(
-                                        OrderType.Descending
-                                    )
-                                )
-                            )
-                        },
-                        isSelected = state.wordOrder is WordOrder.CreationDate && state.wordOrder.orderType == OrderType.Descending
-                    )
-
-                    SheetRow(
-                        text = stringResource(id = R.string.order_alphabetically_ascending),
-                        onClick = {
-                            viewModel.onEvent(
-                                WordEvent.OnOrderChanged(
-                                    WordOrder.Alphabetically(
-                                        OrderType.Ascending
-                                    )
-                                )
-                            )
-                        },
-                        isSelected = state.wordOrder is WordOrder.Alphabetically && state.wordOrder.orderType == OrderType.Ascending
-                    )
-
-                    SheetRow(
-                        text = stringResource(id = R.string.order_alphabetically_descending),
-                        onClick = {
-                            viewModel.onEvent(
-                                WordEvent.OnOrderChanged(
-                                    WordOrder.Alphabetically(
-                                        OrderType.Descending
-                                    )
-                                )
-                            )
-                        },
-                        isSelected = state.wordOrder is WordOrder.Alphabetically && state.wordOrder.orderType == OrderType.Descending
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-                }
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (state.wordList.isEmpty()) {
+                EmptyStateMessage(modifier = Modifier.align(Alignment.Center), messageId = R.string.empty_word_screen)
 
             }
-
-            if (state.isGroupDialogVisible) {
-                StandardDialog(
-                    title = stringResource(id = R.string.add_group),
-                    onDismiss = { viewModel.onEvent(WordEvent.OnGroupDialogVisibilityChanged) },
-                    onRequest = { viewModel.onEvent(WordEvent.OnGroupAdded) }) {
-                    StandardTextField(
-                        hint = stringResource(id = R.string.group_name),
-                        modifier = Modifier,
-                        onValueChange = { viewModel.onEvent(WordEvent.OnGroupNameChanged(it)) },
-                        text = state.groupName,
-                        isError = state.groupNameError.isNotNull(),
-                        supportingText = state.groupNameError?.asString()
-                    )
-
-                }
-            }
-
-            if (state.isBulkDeleteDialogVisible) {
-                StandardDialog(
-                    title = stringResource(id = R.string.bulk_delete),
-                    onDismiss = {
-                        viewModel.onEvent(
-                            WordEvent.OnBulkDeleteDialogVisibilityChanged
-                        )
-                    },
-                    onRequest = { viewModel.onEvent(WordEvent.OnBulkDelete) }
-                ) {
-                    Text(text = stringResource(id = R.string.are_you_sure_delete_words))
-                }
-            }
-
-            if (state.isWordsMoveDialogVisible) {
-                StandardDialog(
-                    title = stringResource(id = R.string.move_group_selected_words),
-                    onDismiss = { viewModel.onEvent(WordEvent.OnWordsMoveDialogVisibilityChanged) },
-                    onRequest = { viewModel.onEvent(WordEvent.OnWordsMove) }
-                ) {
-                    var isExpanded by remember {
-                        mutableStateOf(false)
-                    }
-                    ExposedDropdownMenuBox(
-                        expanded = isExpanded,
-                        onExpandedChange = { isExpanded = it }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValue),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                WordList(words = state.wordList, viewModel)
+                if (state.isAddDialogVisible) {
+                    StandardDialog(
+                        title = stringResource(id = R.string.add_word),
+                        onDismiss = { viewModel.onEvent(WordEvent.OnAddDialogVisibilityChange(false)) },
+                        onRequest = { viewModel.onEvent(WordEvent.SaveWord) }
+                    ) {
+                        val dialogModifier = Modifier.padding(horizontal = 8.dp)
                         StandardTextField(
-                            text = viewModel.state.groupToMove?.groupName
-                                ?: stringResource(id = R.string.select_group),
-                            onValueChange = {},
-                            readOnly = true,
-                            iconEnd = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
-                            modifier = Modifier.menuAnchor()
+                            hint = stringResource(id = R.string.word),
+                            modifier = dialogModifier,
+                            onValueChange = { viewModel.onEvent(WordEvent.OnWordChanged(it)) },
+                            text = state.word,
+                            isError = state.wordError.isNotNull(),
+                            supportingText = state.wordError?.asString()
                         )
-                        ExposedDropdownMenu(
-                            expanded = isExpanded,
-                            onDismissRequest = {
+                        StandardTextField(
+                            hint = stringResource(id = R.string.meaning),
+                            modifier = dialogModifier,
+                            onValueChange = { viewModel.onEvent(WordEvent.OnMeaningChanged(it)) },
+                            text = state.meaning,
+                            isError = state.meaningError.isNotNull(),
+                            supportingText = state.meaningError?.asString()
+                        )
+                    }
+                }
+                if (state.isDeleteDialogVisible) {
+                    StandardDialog(
+                        title = stringResource(id = R.string.delete_word),
+                        onDismiss = {
+                            viewModel.onEvent(
+                                WordEvent.OnDeleteDialogVisibilityChange(
+                                    false,
+                                    null
+                                )
+                            )
+                        },
+                        onRequest = { viewModel.onEvent(WordEvent.DeleteWord) }
+                    ) {
+                        Text(text = stringResource(id = R.string.are_you_sure_delete_word))
+                    }
+                }
+                if (state.isUpdateDialogVisible) {
+                    StandardDialog(
+                        title = stringResource(id = R.string.update_word),
+                        onDismiss = {
+                            viewModel.onEvent(
+                                WordEvent.OnUpdateDialogVisibilityChange(
+                                    false
+                                )
+                            )
+                        },
+                        onRequest = { viewModel.onEvent(WordEvent.UpdateWord) }
+                    ) {
+                        val dialogModifier = Modifier.padding(horizontal = 8.dp)
+                        StandardTextField(
+                            hint = stringResource(id = R.string.word),
+                            modifier = dialogModifier,
+                            onValueChange = { viewModel.onEvent(WordEvent.OnWordChanged(it)) },
+                            text = state.word,
+                            isError = state.wordError.isNotNull(),
+                            supportingText = state.wordError?.asString()
+                        )
+                        StandardTextField(
+                            hint = stringResource(id = R.string.meaning),
+                            modifier = dialogModifier,
+                            onValueChange = { viewModel.onEvent(WordEvent.OnMeaningChanged(it)) },
+                            text = state.meaning,
+                            isError = state.meaningError.isNotNull(),
+                            supportingText = state.meaningError?.asString()
+                        )
+                    }
+                }
+                StandardCircularIndicator(isLoading = state.isLoading)
+
+                val sheetState = rememberModalBottomSheetState()
+
+                if (state.isSheetOpen) {
+                    ModalBottomSheet(
+                        onDismissRequest = { viewModel.onEvent(WordEvent.OnSheetVisibilityChange) },
+                        sheetState = sheetState,
+                    ) {
+                        SheetRow(
+                            text = stringResource(id = R.string.order_by_creation_date_ascending),
+                            onClick = {
                                 viewModel.onEvent(
-                                    WordEvent.OnGroupToMoveChange(
-                                        null
+                                    WordEvent.OnOrderChanged(
+                                        WordOrder.CreationDate(
+                                            OrderType.Ascending
+                                        )
                                     )
-                                );isExpanded = false
-                            }) {
+                                )
+                            },
+                            isSelected = state.wordOrder is WordOrder.CreationDate && state.wordOrder.orderType == OrderType.Ascending
+                        )
+
+                        SheetRow(
+                            text = stringResource(id = R.string.order_by_creation_date_descending),
+                            onClick = {
+                                viewModel.onEvent(
+                                    WordEvent.OnOrderChanged(
+                                        WordOrder.CreationDate(
+                                            OrderType.Descending
+                                        )
+                                    )
+                                )
+                            },
+                            isSelected = state.wordOrder is WordOrder.CreationDate && state.wordOrder.orderType == OrderType.Descending
+                        )
+
+                        SheetRow(
+                            text = stringResource(id = R.string.order_alphabetically_ascending),
+                            onClick = {
+                                viewModel.onEvent(
+                                    WordEvent.OnOrderChanged(
+                                        WordOrder.Alphabetically(
+                                            OrderType.Ascending
+                                        )
+                                    )
+                                )
+                            },
+                            isSelected = state.wordOrder is WordOrder.Alphabetically && state.wordOrder.orderType == OrderType.Ascending
+                        )
+
+                        SheetRow(
+                            text = stringResource(id = R.string.order_alphabetically_descending),
+                            onClick = {
+                                viewModel.onEvent(
+                                    WordEvent.OnOrderChanged(
+                                        WordOrder.Alphabetically(
+                                            OrderType.Descending
+                                        )
+                                    )
+                                )
+                            },
+                            isSelected = state.wordOrder is WordOrder.Alphabetically && state.wordOrder.orderType == OrderType.Descending
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+                    }
+
+                }
+
+                if (state.isGroupDialogVisible) {
+                    StandardDialog(
+                        title = stringResource(id = R.string.add_group),
+                        onDismiss = { viewModel.onEvent(WordEvent.OnGroupDialogVisibilityChanged) },
+                        onRequest = { viewModel.onEvent(WordEvent.OnGroupAdded) }) {
+                        StandardTextField(
+                            hint = stringResource(id = R.string.group_name),
+                            modifier = Modifier,
+                            onValueChange = { viewModel.onEvent(WordEvent.OnGroupNameChanged(it)) },
+                            text = state.groupName,
+                            isError = state.groupNameError.isNotNull(),
+                            supportingText = state.groupNameError?.asString()
+                        )
+
+                    }
+                }
+
+                if (state.isBulkDeleteDialogVisible) {
+                    StandardDialog(
+                        title = stringResource(id = R.string.bulk_delete),
+                        onDismiss = {
+                            viewModel.onEvent(
+                                WordEvent.OnBulkDeleteDialogVisibilityChanged
+                            )
+                        },
+                        onRequest = { viewModel.onEvent(WordEvent.OnBulkDelete) }
+                    ) {
+                        Text(text = stringResource(id = R.string.are_you_sure_delete_words))
+                    }
+                }
+
+                if (state.isWordsMoveDialogVisible) {
+                    StandardDialog(
+                        title = stringResource(id = R.string.move_group_selected_words),
+                        onDismiss = { viewModel.onEvent(WordEvent.OnWordsMoveDialogVisibilityChanged) },
+                        onRequest = { viewModel.onEvent(WordEvent.OnWordsMove) }
+                    ) {
+                        var isExpanded by remember {
+                            mutableStateOf(false)
+                        }
+                        ExposedDropdownMenuBox(
+                            expanded = isExpanded,
+                            onExpandedChange = { isExpanded = it }) {
+                            StandardTextField(
+                                text = viewModel.state.groupToMove?.groupName
+                                    ?: stringResource(id = R.string.select_group),
+                                onValueChange = {},
+                                readOnly = true,
+                                iconEnd = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
+                                modifier = Modifier.menuAnchor()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = isExpanded,
+                                onDismissRequest = {
+                                    viewModel.onEvent(
+                                        WordEvent.OnGroupToMoveChange(
+                                            null
+                                        )
+                                    );isExpanded = false
+                                }) {
 
 
-                            val menuGroups = state.groups.toMutableList()
-                            menuGroups.remove(state.selectedGroup)
+                                val menuGroups = state.groups.toMutableList()
+                                menuGroups.remove(state.selectedGroup)
 
-                            menuGroups.forEach { group ->
-                                DropdownMenuItem(
-                                    onClick = {
-                                        viewModel.onEvent(
-                                            WordEvent.OnGroupToMoveChange(
-                                                group
-                                            )
-                                        );isExpanded = false
+                                menuGroups.forEach { group ->
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            viewModel.onEvent(
+                                                WordEvent.OnGroupToMoveChange(
+                                                    group
+                                                )
+                                            );isExpanded = false
+                                        }
+                                    ) {
+                                        Text(text = group.groupName)
                                     }
-                                ) {
-                                    Text(text = group.groupName)
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            if (state.isUpdateGroupDialogVisible) {
-                StandardDialog(
-                    title = stringResource(id = R.string.edit_group),
-                    onDismiss = { viewModel.onEvent(WordEvent.OnUpdatedGroupDialogVisibilityChanged) },
-                    onRequest = { viewModel.onEvent(WordEvent.OnGroupUpdated) }) {
-                    StandardTextField(
-                        text = state.newGroupName,
-                        onValueChange = { viewModel.onEvent(WordEvent.OnNewGroupNameChanged(it)) },
-                        hint = stringResource(id = R.string.new_group_name),
-                        isError = state.newGroupNameError.isNotNull(),
-                        supportingText = state.newGroupNameError?.asString()
-                    )
-
-                }
-            }
-
-            if (state.isDeleteGroupDialogVisible) {
-                StandardDialog(
-                    title = stringResource(id = R.string.delete_group),
-                    onDismiss = { viewModel.onEvent(WordEvent.OnDeleteGroupDialogVisibilityChanged) },
-                    onRequest = {
-                        viewModel.onEvent(WordEvent.OnGroupDeleted)
+                if (state.isUpdateGroupDialogVisible) {
+                    StandardDialog(
+                        title = stringResource(id = R.string.edit_group),
+                        onDismiss = { viewModel.onEvent(WordEvent.OnUpdatedGroupDialogVisibilityChanged) },
+                        onRequest = { viewModel.onEvent(WordEvent.OnGroupUpdated) }) {
+                        StandardTextField(
+                            text = state.newGroupName,
+                            onValueChange = { viewModel.onEvent(WordEvent.OnNewGroupNameChanged(it)) },
+                            hint = stringResource(id = R.string.new_group_name),
+                            isError = state.newGroupNameError.isNotNull(),
+                            supportingText = state.newGroupNameError?.asString()
+                        )
 
                     }
-                ) {
-                    Text(text = stringResource(id = R.string.are_you_sure_delete_group))
-                    Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = state.isDeleteAllWordsInGroupSelected,
-                            onCheckedChange = { viewModel.onEvent(WordEvent.OnDeleteAllWordsCheckChanged) })
-                        Text(text = stringResource(id = R.string.delete_all_words_in_group))
-                    }
-
                 }
+
+                if (state.isDeleteGroupDialogVisible) {
+                    StandardDialog(
+                        title = stringResource(id = R.string.delete_group),
+                        onDismiss = { viewModel.onEvent(WordEvent.OnDeleteGroupDialogVisibilityChanged) },
+                        onRequest = {
+                            viewModel.onEvent(WordEvent.OnGroupDeleted)
+
+                        }
+                    ) {
+                        Text(text = stringResource(id = R.string.are_you_sure_delete_group))
+                        Row(
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = state.isDeleteAllWordsInGroupSelected,
+                                onCheckedChange = { viewModel.onEvent(WordEvent.OnDeleteAllWordsCheckChanged) })
+                            Text(text = stringResource(id = R.string.delete_all_words_in_group))
+                        }
+
+                    }
+                }
+
+
             }
-
-
         }
+
     }
 }
+
+
+
 
 @Composable
 fun SheetRow(text: String, onClick: () -> Unit, isSelected: Boolean) {

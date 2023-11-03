@@ -1,6 +1,7 @@
 package com.novacodestudios.recall.presentation.util
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,12 +44,24 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.novacodestudios.recall.R
+
+@Composable
+fun EmptyStateMessage(modifier:Modifier= Modifier,@StringRes messageId:Int) {
+    Text(
+        text = stringResource(id = messageId),
+        modifier = modifier,
+        fontSize = MaterialTheme.typography.titleMedium.fontSize,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center
+    )
+}
 
 @Composable
 fun StandardTextField(
@@ -301,6 +314,37 @@ fun StandardDialog(
                     TextButton(onClick = onRequest) {
                         Text(text = requestText)
                     }
+                }
+            }
+
+        }
+    }
+
+
+}
+
+@Composable
+fun StandardDialog(
+    title: String,
+    dismissText: String = stringResource(id = R.string.cancel),
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 25.dp)) {
+                StandardText(text = title, modifier = Modifier.padding(vertical = 20.dp))
+                content()
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp)
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(text = dismissText)
+                    }
+
                 }
             }
 

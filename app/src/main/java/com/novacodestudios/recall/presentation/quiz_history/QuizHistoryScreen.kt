@@ -3,9 +3,11 @@ package com.novacodestudios.recall.presentation.quiz_history
 import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.novacodestudios.recall.R
 import com.novacodestudios.recall.domain.model.QuizDetail
+import com.novacodestudios.recall.presentation.util.EmptyStateMessage
 import com.novacodestudios.recall.util.relativeTimeAgo
 
 
@@ -37,22 +40,33 @@ fun QuizHistoryScreen(
 ) {
     val state = viewModel.state
 
-    LazyColumn(contentPadding = PaddingValues(8.dp)) {
-        state.activeQuiz?.let { activeQuiz ->
-            item(key = activeQuiz.id) {
-                NewQuizRow(onClick = { onNavigateToQuestionScreen(activeQuiz.id.toString()) })
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (state.activeQuiz == null && state.pastQuizzes.isEmpty()) {
+            EmptyStateMessage(
+                messageId = R.string.empty_quiz_history_screen,
+                modifier = Modifier.align(Alignment.Center)
+                    .padding(horizontal = 15.dp)
+            )
+        }
+        LazyColumn(contentPadding = PaddingValues(8.dp)) {
+            state.activeQuiz?.let { activeQuiz ->
+                item(key = activeQuiz.id) {
+                    NewQuizRow(onClick = { onNavigateToQuestionScreen(activeQuiz.id.toString()) })
+                }
+            }
+            item {
+                Divider()
+            }
+            items(state.pastQuizzes, key = { it.id }) { quizDetail ->
+                QuizItem(
+                    quizDetail = quizDetail,
+                    context = context,
+                    onClick = { onNavigateToResultScreen(quizDetail.id.toString()) })
             }
         }
-        item {
-            Divider()
-        }
-        items(state.pastQuizzes, key = { it.id }) { quizDetail ->
-            QuizItem(
-                quizDetail = quizDetail,
-                context = context,
-                onClick = { onNavigateToResultScreen(quizDetail.id.toString()) })
-        }
     }
+
+
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -87,24 +101,6 @@ fun QuizItem(quizDetail: QuizDetail, context: Context, onClick: () -> Unit) {
         },
         secondaryText = { Text(text = relativeTimeAgo(quizDetail.creationDate, context)) }
     )
-
-    /* Column(modifier = Modifier
-         .fillMaxWidth()
-         .clickable { onClick() },) {
-         Row(
-             modifier = Modifier
-                 .fillMaxWidth()
-                 .padding(vertical = 8.dp),
-             verticalAlignment = Alignment.CenterVertically,
-             horizontalArrangement = Arrangement.SpaceEvenly
-         ) {
-             DetailItem(title = stringResource(id = R.string.correct), value = quizDetail.correctAnswerCount.toString(),titleWeight = FontWeight.Bold)
-             DetailItem(title = stringResource(id = R.string.wrong), value = quizDetail.wrongAnswerCount.toString(),titleWeight = FontWeight.Bold)
-             DetailItem(title = stringResource(id = R.string.succes_rate), value = "%${quizDetail.successRate}",titleWeight = FontWeight.Bold)
-
-         }
-       //  Text(text =relativeTimeAgo(quizDetail.creationDate, context), modifier = Modifier.padding(start = 16.dp))
-     }*/
 
     Divider()
 }

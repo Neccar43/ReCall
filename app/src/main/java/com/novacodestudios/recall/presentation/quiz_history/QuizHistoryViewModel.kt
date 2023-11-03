@@ -35,10 +35,8 @@ class QuizHistoryViewModel @Inject constructor(
 
         completedQuizzesJob = getCompletedQuizzes().onEach { completedQuizzes ->
             completedQuizzes.forEach {quiz->
-                getQuizWithQuestionsById(quiz.id).map {it?.toQuizDetail() }.onEach {
-                    if (it != null) {
-                        quizDetails.add(it)
-                    }
+                getQuizWithQuestionsById(quiz.id).map { it.toQuizDetail() }.onEach {
+                    quizDetails.add(it)
                     state=state.copy(pastQuizzes = quizDetails)
                 }.launchIn(viewModelScope)
             }

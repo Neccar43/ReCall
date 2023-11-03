@@ -25,7 +25,6 @@ import com.novacodestudios.recall.domain.use_case.SaveWordToRoom
 import com.novacodestudios.recall.domain.use_case.SetActiveGroupId
 import com.novacodestudios.recall.domain.use_case.SetGroupToFirestore
 import com.novacodestudios.recall.domain.use_case.SetWordToFirestore
-import com.novacodestudios.recall.domain.use_case.TranslateWord
 import com.novacodestudios.recall.domain.use_case.UpdateGroupFromRoom
 import com.novacodestudios.recall.domain.use_case.UpdateWordInRoom
 import com.novacodestudios.recall.domain.use_case.ValidateMeaning
@@ -59,7 +58,7 @@ class WordViewModel @Inject constructor(
     private val getWordsBySearch: GetWordsBySearch,
     private val deleteWordFromRoom: DeleteWordFromRoom,
     private val deleteWordFromFirestore: DeleteWordFromFirestore,
-    private val translateWord: TranslateWord,
+ //   private val translateWord: TranslateWord,
     private val getGroupsFromRoom: GetGroupsFromRoom,
     private val saveGroupToRoom: SaveGroupToRoom,
     private val setGroupToFirestore: SetGroupToFirestore,
@@ -82,7 +81,7 @@ class WordViewModel @Inject constructor(
     fun onEvent(event: WordEvent) {
         when (event) {
             is WordEvent.OnMeaningChanged -> state = state.copy(meaning = event.meaning)
-            is WordEvent.SaveWord -> saveWord()
+            WordEvent.SaveWord -> saveWord()
             is WordEvent.OnWordChanged -> state = state.copy(word = event.word)
             is WordEvent.OnSearchChanged -> searchWorld(event.search)
             is WordEvent.OnAddDialogVisibilityChange -> {
@@ -93,8 +92,8 @@ class WordViewModel @Inject constructor(
                 )
             }
 
-            is WordEvent.DeleteWord -> deleteWord()
-            is WordEvent.UpdateWord -> updateWord()
+            WordEvent.DeleteWord -> deleteWord()
+            WordEvent.UpdateWord -> updateWord()
             is WordEvent.OnDeleteDialogVisibilityChange -> state = state.copy(
                 isDeleteDialogVisible = event.isVisible,
                 deletedWord = event.deletedWord
@@ -505,8 +504,17 @@ class WordViewModel @Inject constructor(
             )
             return
         }
+        if (meaningResult.data!=true){
+            state = state.copy(isLoading = false, isAddDialogVisible = true)
+            state = state.copy(
+                meaningError = meaningResult.message
+            )
+            return
+        }
         viewModelScope.launch {
-            if (meaningResult.data != true) {
+
+            // TODO: Transle özelliği sonra eklenecek
+            /*if (meaningResult.data != true) {
 
                 state =
                     when (val result = translateWord(word = state.word.lowercase(Locale.ROOT))) {
@@ -523,7 +531,7 @@ class WordViewModel @Inject constructor(
                         )
                     }
 
-            }
+            }*/
             val word = Word(
                 name = state.word.lowercase(Locale.ROOT),
                 meaning = state.meaning.lowercase(Locale.ROOT),
