@@ -66,9 +66,9 @@ class QuizWorker @AssistedInject constructor(
 
                     NotiKitBuilder(applicationContext)
                         .setChannel("quiz_id", "Quiz", "For quizzes")
-                        .setContent("Hazır bir quiz mevcut", "Quizini hemen olmak için tıkla")
+                        .setContent(applicationContext.getString(R.string.quiz_notification_title), applicationContext.getString(R.string.quiz_notification_content))
                         .setIntent(Intent(applicationContext, MainActivity::class.java))
-                        .setSmallIcon(R.drawable.ic_launcher_foreground)
+                        .setSmallIcon(R.drawable.logo)
                         .build()
                 }
             }
