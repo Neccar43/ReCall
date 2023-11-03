@@ -1,5 +1,8 @@
 package com.novacodestudios.recall.presentation.sign_up
 
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +18,7 @@ import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
@@ -31,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.novacodestudios.recall.R
 import com.novacodestudios.recall.presentation.util.StandardButton
@@ -52,16 +57,21 @@ fun SignUpScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val state = viewModel.state
 
-    val context= LocalContext.current
+    val context = LocalContext.current
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is SignUpViewModel.UIEvent.ShowSnackbar -> {
-                    when (val text=event.message) {
-                        is UIText.DynamicText ->  snackbarHostState.showSnackbar(text.value)
-                        is UIText.StringResource -> snackbarHostState.showSnackbar(text.asString(context = context))
+                    when (val text = event.message) {
+                        is UIText.DynamicText -> snackbarHostState.showSnackbar(text.value)
+                        is UIText.StringResource -> snackbarHostState.showSnackbar(
+                            text.asString(
+                                context = context
+                            )
+                        )
                     }
                 }
+
                 is SignUpViewModel.UIEvent.SignUp -> {
                     onNavigateToHomeGraph()
                 }
@@ -177,7 +187,13 @@ fun SignUpScreen(
                                 )
                             }
                         )
-
+                        PrivacyPolicyCheckBox(
+                            modifier = standardModifier,
+                            checked = state.isPrivacyPolicyChecked,
+                            errorMessage = state.privacyPolicyError?.asString(context),
+                            onCheckedChange = { viewModel.onEvent(SignUpEvent.OnCheckedChanged) },
+                            onLinkClicked = { viewModel.onEvent(SignUpEvent.OnLinkClicked) }
+                        )
 
                         StandardButton(
                             onClick = { viewModel.onEvent(SignUpEvent.SignUp) },
@@ -201,11 +217,71 @@ fun SignUpScreen(
 
 
                 }
+
+
                 StandardCircularIndicator(isLoading = state.isLoading)
+
             }
+
+
+        }
+        if (state.isLinkClicked) {
+            PrivacyPolicyWebView(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            )
+            BackHandler {
+                viewModel.onEvent(SignUpEvent.OnLinkClicked)
+            }
+
+        }
+    }
+}
+
+@Composable
+fun PrivacyPolicyCheckBox(
+    modifier: Modifier = Modifier,
+    checked: Boolean,
+    errorMessage: String?,
+    onCheckedChange: () -> Unit,
+    onLinkClicked: () -> Unit
+) {
+    Column {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
+            Checkbox(
+                checked = checked,
+                onCheckedChange = { onCheckedChange() })
+
+            Column {
+                StandardLinkedText(text = stringResource(id = R.string.agree_privacy_policy)    , onClick = onLinkClicked)
+                if (errorMessage != null) {
+                    Text(
+                        modifier = Modifier,
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = MaterialTheme.typography.labelSmall.fontSize
+                    )
+                }
+            }
+
         }
 
+    }
+}
 
+@Composable
+fun PrivacyPolicyWebView(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val webView = remember {
+        WebView(context).apply {
+            settings.javaScriptEnabled = true
+            webViewClient = WebViewClient()
+            loadUrl("https://sites.google.com/view/recall-privacy-policy-v1/ana-sayfa")
+        }
+    }
+    Box(modifier = modifier) {
+        AndroidView(factory = { webView })
     }
 
 }

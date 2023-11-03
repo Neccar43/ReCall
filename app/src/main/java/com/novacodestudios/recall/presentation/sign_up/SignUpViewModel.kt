@@ -5,16 +5,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.novacodestudios.recall.R
 import com.novacodestudios.recall.domain.use_case.SignUpUserToFirebase
 import com.novacodestudios.recall.domain.use_case.ValidateEmail
 import com.novacodestudios.recall.domain.use_case.ValidateName
 import com.novacodestudios.recall.domain.use_case.ValidatePassword
+import com.novacodestudios.recall.domain.use_case.ValidatePrivacyPolicy
 import com.novacodestudios.recall.domain.use_case.ValidateRepeatedPassword
 import com.novacodestudios.recall.presentation.util.UIText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,6 +28,7 @@ class SignUpViewModel @Inject constructor(
     private val validatePassword: ValidatePassword,
     private val validateRepeatedPassword: ValidateRepeatedPassword,
     private val signUpUserToFirebase: SignUpUserToFirebase,
+    private val validatePrivacyPolicy: ValidatePrivacyPolicy,
 
     ) : ViewModel() {
 
@@ -41,6 +46,8 @@ class SignUpViewModel @Inject constructor(
                 state.copy(repeatedPassword = event.repeatedPassword)
 
             is SignUpEvent.SignUp -> signUp()
+            SignUpEvent.OnCheckedChanged -> state = state.copy(isPrivacyPolicyChecked = !state.isPrivacyPolicyChecked)
+            SignUpEvent.OnLinkClicked -> state = state.copy(isLinkClicked = !state.isLinkClicked)
         }
     }
 
@@ -51,12 +58,14 @@ class SignUpViewModel @Inject constructor(
         val passwordResult = validatePassword(state.password)
         val repeatedPasswordResult =
             validateRepeatedPassword(state.password, state.repeatedPassword)
+        val privacyPolicyResult= validatePrivacyPolicy(state.isPrivacyPolicyChecked)
 
         val hasError = listOf(
             nameResult,
             emailResult,
             passwordResult,
-            repeatedPasswordResult
+            repeatedPasswordResult,
+            privacyPolicyResult
         ).any { it.data != true }
 
         if (hasError) {
@@ -65,17 +74,23 @@ class SignUpViewModel @Inject constructor(
                 fullNameError = nameResult.message,
                 emailError = emailResult.message,
                 passwordError = passwordResult.message,
-                repeatedPasswordError = repeatedPasswordResult.message
+                repeatedPasswordError = repeatedPasswordResult.message,
+                privacyPolicyError =privacyPolicyResult.message
             )
             return
         }
         viewModelScope.launch {
             try {
-                signUpUserToFirebase(state.email, state.password)
-                state=state.copy(isLoading = false)
+                withTimeout(15000) {
+                    signUpUserToFirebase(state.email, state.password)
+                }
+                state = state.copy(isLoading = false)
                 _eventFlow.emit(UIEvent.SignUp)
+            } catch (e: TimeoutCancellationException) {
+                state = state.copy(isLoading = false)
+                _eventFlow.emit(UIEvent.ShowSnackbar(UIText.StringResource(R.string.auth_time_out)))
             } catch (e: Exception) {
-                state=state.copy(isLoading = false)
+                state = state.copy(isLoading = false)
                 _eventFlow.emit(UIEvent.ShowSnackbar(UIText.DynamicText(e.localizedMessage!!)))
             }
         }

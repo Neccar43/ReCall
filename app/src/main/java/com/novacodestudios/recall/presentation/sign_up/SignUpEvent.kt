@@ -6,4 +6,6 @@ sealed class SignUpEvent{
     data class PasswordChanged(val password:String):SignUpEvent()
     data class RepeatedPasswordChanged(val repeatedPassword:String):SignUpEvent()
     data object SignUp:SignUpEvent()
+    data object OnCheckedChanged:SignUpEvent()
+    data object OnLinkClicked:SignUpEvent()
 }

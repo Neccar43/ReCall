@@ -11,5 +11,8 @@ data class SignUpState(
     val passwordError: UIText? = null,
     val repeatedPassword: String = "",
     val repeatedPasswordError: UIText? = null,
-    val isLoading:Boolean=false
+    val isLoading:Boolean=false,
+    val isPrivacyPolicyChecked:Boolean=false,
+    val privacyPolicyError:UIText?=null,
+    val isLinkClicked:Boolean=false
     )

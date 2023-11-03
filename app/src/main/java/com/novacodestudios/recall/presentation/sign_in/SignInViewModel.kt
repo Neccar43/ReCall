@@ -13,9 +13,11 @@ import com.novacodestudios.recall.domain.use_case.ValidateEmail
 import com.novacodestudios.recall.domain.use_case.ValidatePassword
 import com.novacodestudios.recall.presentation.util.UIText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 @HiltViewModel
@@ -92,11 +94,18 @@ class SignInViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
-                signInUserWithFirebase(state.email, state.password)
+                withTimeout(15000){
+                    signInUserWithFirebase(state.email, state.password)
+                }
+
                 state = state.copy(isLoading = false)
                 _eventFlow.emit(UIEvent.SignIn)
                 syncDataWorkerUseCase()
-            } catch (e: Exception) {
+            }catch (e: TimeoutCancellationException) {
+                state = state.copy(isLoading = false)
+                _eventFlow.emit(UIEvent.ShowSnackbar(UIText.StringResource(R.string.auth_time_out)))
+            }
+            catch (e: Exception) {
                 state = state.copy(isLoading = false)
                 _eventFlow.emit(UIEvent.ShowSnackbar(UIText.DynamicText(e.localizedMessage!!)))
             }
