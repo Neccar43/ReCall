@@ -104,7 +104,7 @@
 
     <string name="meanings_invisible">Hide meanings</string>
     <string name="quiz_result">Correct:%1$d   Wrong:%2$d   Success Rate: %3$s</string>
-   <!-- <string name="duration">   Duration: %1$s</string>-->
+    <!-- <string name="duration">   Duration: %1$s</string>-->
     <string name="have_test">You have a test ready</string>
     <string name="click_start">Click to get started</string>
 
@@ -123,4 +123,18 @@
     <string name="reset_password">Reset password</string>
     <string name="delete_account_success">Your account has been successfully deleted.</string>
 
+    <string name="empty_word_screen">Click + button to add new word</string>
+    <string name="empty_quiz_history_screen">Your past quiz results will be displayed here! Add at least 10 words to start your first quiz</string>
+
+    <string name="quiz_notification_title">Time to Test Your Memory!</string>
+    <string name="quiz_notification_content">A new word quiz is waiting for you! Dive into the app and showcase your skills!</string>
+
+    <string name="privacy_policy_required_field">You must accept the privacy policy.</string>
+    <string name="agree_privacy_policy">Agree to our Privacy Policy</string>
+    <string name="auth_time_out">The process timed out.</string>
+
+    <string name="quiz_notification">Necessary to send notifications when quizzes are ready</string>
+    <string name="no_connection">No connection</string>
+    <string name="exit">Exit</string>
+    <string name="no_internet">It seems that you have no internet connection. Please try again later</string>
 </resources>

@@ -118,6 +118,18 @@
     <string name="reset_password_email_success">Şifre sıfırlama talebiniz başarıyla işleme konuldu ve sıfırlama bağlantısı e-posta adresinize gönderildi.</string>
     <string name="reset_password">Şifreyi sıfırla</string>
     <string name="delete_account_success">Hesabınız başarıyla kaldırıldı.</string>
+    <string name="empty_word_screen">Yeni kelime eklemek için + butonuna tıklayın</string>
+    <string name="empty_quiz_history_screen">Geçmiş test sonuçlarınız burada görüntülenecek! İlk testinize başlamak için en az 10 kelime ekleyin</string>
 
+    <string name="quiz_notification_title">Hafızanı Test Etme Zamanı!</string>
+    <string name="quiz_notification_content">Yeni bir kelime testi seni bekliyor! Hemen uygulamaya gir ve yeteneklerini göster!</string>
 
+    <string name="privacy_policy_required_field">Gizlilik politikasını kabul etmeniz gerekiyor.</string>
+    <string name="agree_privacy_policy">Gizlilik Politikamızı kabul edin</string>
+    <string name="auth_time_out">İşlem zaman aşımına uğradı.</string>
+
+    <string name="quiz_notification">Quizler hazır olduğunda bildirim göndermek için gerekli</string>
+    <string name="no_connection">Bağlantınız yok</string>
+    <string name="exit">Çık</string>
+    <string name="no_internet">İnternet bağlantınız yok gibi görünüyor. Lütfen daha sonra tekrar deneyin</string>
 </resources>
