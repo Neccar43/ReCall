@@ -1,6 +1,7 @@
 package com.novacodestudios.recall.presentation.navigation
 
 import android.content.Context
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ListAlt
@@ -20,6 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -36,15 +39,28 @@ import com.google.firebase.auth.FirebaseUser
 import com.novacodestudios.recall.R
 import com.novacodestudios.recall.presentation.question.QuestionScreen
 import com.novacodestudios.recall.presentation.result.ResultScreen
+import com.novacodestudios.recall.presentation.splash.SplashScreen
 import com.novacodestudios.recall.presentation.util.BottomNavigationItem
 import com.novacodestudios.recall.presentation.util.Screen
 import com.novacodestudios.recall.util.Constants
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
-fun RootGraph(navController: NavHostController, currentUser: FirebaseUser?, context: Context) {
+fun RootGraph(
+    navController: NavHostController,
+    currentUser: FirebaseUser?,
+    context: Context,
+    isConnected: Boolean
+) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.parent?.route
+    var isSplash by remember {
+        mutableStateOf(false)
+    }
     Scaffold(bottomBar = {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.parent?.route
         if (currentRoute == Graph.MAIN) {
             BottomNavBar(navController = navController)
         }
@@ -52,10 +68,10 @@ fun RootGraph(navController: NavHostController, currentUser: FirebaseUser?, cont
         NavHost(
             modifier = Modifier.padding(paddingValue),
             navController = navController,
-            startDestination = if (currentUser == null) Graph.AUTH else Graph.MAIN,
+            startDestination = Screen.SplashScreen.route,
             route = Graph.ROOT
         ) {
-            authGraph(navController)
+            authGraph(navController, isSplash)
             mainGraph(navController, context)
 
             composable(
@@ -91,6 +107,36 @@ fun RootGraph(navController: NavHostController, currentUser: FirebaseUser?, cont
                         }
                     }
                 })
+            }
+
+            composable(Screen.SplashScreen.route, exitTransition = { fadeOut() }) {
+                SplashScreen {
+                    isSplash = true
+
+                    if (isConnected) {
+                        if (currentUser == null) {
+                            navController.navigate(Graph.AUTH) {
+                                popUpTo(Screen.SplashScreen.route) {
+                                    inclusive = true
+                                }
+                            }
+                            CoroutineScope(Dispatchers.Main).launch {
+                                delay(1000)
+                                isSplash = false
+                            }
+
+                        } else {
+                            navController.navigate(Graph.MAIN) {
+                                popUpTo(Screen.SplashScreen.route) {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                    }
+
+
+                }
+
             }
 
         }

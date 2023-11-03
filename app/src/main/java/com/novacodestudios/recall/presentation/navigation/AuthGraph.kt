@@ -2,6 +2,7 @@ package com.novacodestudios.recall.presentation.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -10,7 +11,7 @@ import com.novacodestudios.recall.presentation.sign_in.SignInScreen
 import com.novacodestudios.recall.presentation.sign_up.SignUpScreen
 import com.novacodestudios.recall.presentation.util.Screen
 
-fun NavGraphBuilder.authGraph(navController: NavController) {
+fun NavGraphBuilder.authGraph(navController: NavController,isSplash:Boolean) {
     navigation(startDestination = Screen.SignInScreen.route, route = Graph.AUTH) {
         composable(
             route = Screen.SignUpScreen.route,
@@ -59,10 +60,15 @@ fun NavGraphBuilder.authGraph(navController: NavController) {
         composable(
             route = Screen.SignInScreen.route,
             enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(700)
-                )
+                if (isSplash) {
+                    fadeIn()
+                } else {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(700)
+                    )
+                }
+
             },
             exitTransition = {
                 slideOutOfContainer(

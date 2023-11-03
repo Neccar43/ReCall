@@ -13,15 +13,12 @@ import com.novacodestudios.recall.data.datastore.GroupDataStore
 import com.novacodestudios.recall.data.datastore.MeaningVisibilityDataStore
 import com.novacodestudios.recall.data.datastore.ThemeDatastore
 import com.novacodestudios.recall.data.local.ReCallDao
-import com.novacodestudios.recall.data.mapper.toTranslation
 import com.novacodestudios.recall.data.remote.GoogleAuthUiClient
-import com.novacodestudios.recall.data.remote.TranslationApi
 import com.novacodestudios.recall.data.util.FirestoreCollections
 import com.novacodestudios.recall.domain.algorithm.SpacedRepetitionAlgorithm
 import com.novacodestudios.recall.domain.model.Group
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.domain.model.Quiz
-import com.novacodestudios.recall.domain.model.Translation
 import com.novacodestudios.recall.domain.model.Word
 import com.novacodestudios.recall.domain.model.relation.QuizWithQuestions
 import com.novacodestudios.recall.domain.model.toGroup
@@ -30,8 +27,6 @@ import com.novacodestudios.recall.domain.model.toQuiz
 import com.novacodestudios.recall.domain.model.toWord
 import com.novacodestudios.recall.domain.repository.ReCallRepository
 import com.novacodestudios.recall.domain.worker.SyncDataWorker
-import com.novacodestudios.recall.presentation.util.UIText
-import com.novacodestudios.recall.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -44,7 +39,7 @@ class ReCallRepositoryImpl @Inject constructor(
     private val googleAuthUiClient: GoogleAuthUiClient,
     private val datastore: ThemeDatastore,
     private val workManager: WorkManager,
-    private val api: TranslationApi,
+  //  private val api: TranslationApi,
     private val meaningVisibilityDataStore: MeaningVisibilityDataStore,
     private val groupDataStore: GroupDataStore,
 
@@ -318,7 +313,7 @@ class ReCallRepositoryImpl @Inject constructor(
         workManager.enqueue(oneTimeSyncDataRequest)
     }
 
-    override suspend fun translateWord(word: String): Resource<Translation> {
+    /*override suspend fun translateWord(word: String): Resource<Translation> {
         try {
             val response = api.translateText(word)
             if (response.isSuccessful) {
@@ -335,7 +330,7 @@ class ReCallRepositoryImpl @Inject constructor(
             return Resource.Error(message = UIText.DynamicText(errorMessage))
         }
 
-    }
+    }*/
 
     override fun getWordsFromRoomByGroupId(groupId: Int?): Flow<List<Word>> {
         return if (groupId == null) dao.getAllWordsFromRoom() else dao.getWordsByGroupId(groupId)

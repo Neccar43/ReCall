@@ -3,10 +3,8 @@ package com.novacodestudios.recall.domain.repository
 import com.novacodestudios.recall.domain.model.Group
 import com.novacodestudios.recall.domain.model.Question
 import com.novacodestudios.recall.domain.model.Quiz
-import com.novacodestudios.recall.domain.model.Translation
 import com.novacodestudios.recall.domain.model.Word
 import com.novacodestudios.recall.domain.model.relation.QuizWithQuestions
-import com.novacodestudios.recall.util.Resource
 import kotlinx.coroutines.flow.Flow
 
 interface ReCallRepository {
@@ -96,7 +94,7 @@ interface ReCallRepository {
 
     fun syncDataWorker()
 
-    suspend fun translateWord(word: String): Resource<Translation>
+  //  suspend fun translateWord(word: String): Resource<Translation>
 
     fun getWordsFromRoomByGroupId(groupId: Int?): Flow<List<Word>>
 

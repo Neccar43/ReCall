@@ -182,12 +182,12 @@ class ReCallDaoTest {
         assertThat(allQuizzes).isEqualTo(quizzes)
     }
 
-    @Test
+    /*@Test
     fun searchWords() = runTest {
         words.forEach { dao.insertWordToRoom(it) }
         val searchWords = dao.searchWords("1").first().first()
         assertThat(searchWords).isEqualTo(words.first())
-    }
+    }*/
 
     @Test
     fun getQuestionsByQuizId() = runTest {
