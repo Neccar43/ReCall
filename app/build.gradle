@@ -7,6 +7,7 @@ plugins {
     id 'dagger.hilt.android.plugin'
     id 'com.google.devtools.ksp'
     id 'com.google.firebase.appdistribution'
+    id "org.jetbrains.kotlin.plugin.compose"
 }
 
 android {
@@ -50,15 +51,16 @@ android {
     buildFeatures {
         compose true
     }
-    composeOptions {
+   /* composeOptions {
         kotlinCompilerExtensionVersion '1.5.1'
-    }
+    }*/
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
 }
+
 
 dependencies {
 
@@ -154,7 +156,7 @@ dependencies {
     implementation "androidx.datastore:datastore-preferences:1.1.1"
 
     //workManager with coroutines
-    def work_version = "2.9.0"
+    def work_version = "2.9.1"
     implementation "androidx.work:work-runtime-ktx:$work_version"
     //work manager testing
     androidTestImplementation "androidx.work:work-testing:$work_version"
