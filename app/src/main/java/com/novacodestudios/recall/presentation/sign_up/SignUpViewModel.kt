@@ -50,7 +50,6 @@ class SignUpViewModel @Inject constructor(
             SignUpEvent.OnLinkClicked -> state = state.copy(isLinkClicked = !state.isLinkClicked)
         }
     }
-
     private fun signUp() {
         state=state.copy(isLoading = true)
         val nameResult = validateName(state.fullName)
@@ -79,9 +78,10 @@ class SignUpViewModel @Inject constructor(
             )
             return
         }
+
         viewModelScope.launch {
             try {
-                withTimeout(15000) {
+                withTimeout(MIN_TIME) {
                     signUpUserToFirebase(state.email, state.password)
                 }
                 state = state.copy(isLoading = false)
@@ -99,6 +99,9 @@ class SignUpViewModel @Inject constructor(
     sealed class UIEvent{
         data class ShowSnackbar(val message:UIText):UIEvent()
         data object SignUp:UIEvent()
+    }
+    companion object{
+        const val MIN_TIME=15000L
     }
 
 }

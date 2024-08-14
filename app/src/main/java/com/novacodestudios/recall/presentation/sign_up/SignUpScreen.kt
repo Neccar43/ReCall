@@ -254,7 +254,10 @@ fun PrivacyPolicyCheckBox(
                 onCheckedChange = { onCheckedChange() })
 
             Column {
-                StandardLinkedText(text = stringResource(id = R.string.agree_privacy_policy)    , onClick = onLinkClicked)
+                StandardLinkedText(
+                    text = stringResource(id = R.string.agree_privacy_policy),
+                    onClick = onLinkClicked
+                )
                 if (errorMessage != null) {
                     Text(
                         modifier = Modifier,

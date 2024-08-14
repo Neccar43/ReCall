@@ -94,7 +94,7 @@ class QuestionViewModel @Inject constructor(
                     calculateNextRepetitionDate(
                         word = word.copy(isInQuiz = false, version = word.version + 1),
                         isAnswerCorrect = question.correctAnswer == question.userAnswer,
-                        responseTime = question.responseTime!!
+                        responseTime = question.responseTime ?: 0L // TODO: Neden null geldiğine bak
                     )
                 }
             }
